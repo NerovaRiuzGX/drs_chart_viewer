@@ -1,0 +1,148 @@
+body {
+    background-color: dimgray;
+}
+
+#camera {
+    width: 1280px;
+    height: 720px;
+    perspective-origin: bottom;
+    perspective: 61px;
+
+    background-image: url("./bg_top_pc.png");
+    background-size: 100% 100%;
+    overflow: hidden;
+
+    margin: 0 auto;
+}
+
+#space {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed black;
+    transform-style: preserve-3d;
+    
+}
+
+#box {
+    width: 1280px;
+    height: 6000px;
+    transform-origin: bottom;
+    transform: translateZ(1px) rotateX(6deg);
+    position: absolute;
+    bottom: 0;
+    outline: 1px solid transparent;
+    backface-visibility: hidden;
+    filter: blur(1.5px);
+
+    display: flex;
+    justify-content: space-around;
+}
+
+#lanebox {
+    width: 100%;
+    height: 100%;
+    flex-grow: 1;
+    display: flex;
+    justify-content: space-around;
+}
+
+#judgeline {
+    position: absolute;
+    bottom: 140px;
+    width: 95%;
+    height: 140px;
+
+    background-color: black;
+    border-radius: 5%;
+    border-bottom: 9px solid white;
+}
+
+#metadata {
+    width: 100%;
+    height: 15%;
+    bottom: 0;
+    position: absolute;
+    opacity: 0.5;
+    background-color: red;
+
+    display: none;
+}
+
+.lane {
+    background: linear-gradient(to bottom, transparent 0%, darkgray 30% 99%, transparent);
+    
+    border-left: 2px solid white;
+    border-right: 2px solid white;
+    flex-grow: 1;
+    opacity: 0.9;
+}
+
+.shoulder {
+    background: linear-gradient(to bottom, lightgray 99%, transparent);
+    
+    width: 2.5%;
+    height: 100%;
+}
+
+#canv {
+    position: absolute;
+    bottom: 0;
+    
+    width: 95%;
+    height: 0;
+    
+}
+
+#poscheck {
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+    height: auto;
+    background-color: blue;
+
+}
+
+.flit  {
+    position: absolute;
+    height: 0px;
+    width: 100%;
+}
+
+#cont {
+    position: absolute;
+    bottom: 0;
+    
+    width: 100%;
+    height: auto;
+}
+
+#downjump {
+    position: absolute;
+    
+    height: 100%;
+    min-width: 100%;
+    filter: blur(.25px);
+}
+
+.arc {
+    position: absolute;
+    aspect-ratio: 1;
+    transform: translate(0, -100%);
+}
+
+.dot {
+    height: 0px;
+    width: 0px;
+    position: absolute;
+
+    right: 0;
+    bottom: 0;
+}
+
+#patterns {
+    display: none;
+}
+
+#viewer {
+    clip-path: inset(5px 0 140px 0);
+}
