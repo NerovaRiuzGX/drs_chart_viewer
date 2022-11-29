@@ -12,8 +12,8 @@ var dj_counter = 0
 
 // settings
 
-var note_thickness = 5
-var hispeed = 3
+var note_thickness = 3
+var hispeed = 1
 
 var thick = 13
 var thick_base = 10
@@ -65,7 +65,7 @@ palette_jump = ["lightskyblue", "steelblue"]
 */
 
 // lanecolor: 2-color stripes
-function make_lanestyle (obj, color1, color2) {
+function make_lanestyle(obj, color1, color2) {
     let lo = obj.getContext("2d")
     let gradient = lo.createLinearGradient(0, 0, 15, 0)
     gradient.addColorStop(0, color1)
@@ -76,19 +76,19 @@ function make_lanestyle (obj, color1, color2) {
 }
 
 // arrowcolor: color1 - background, color2: arrow
-function make_arrowstyle (obj, color1, color2) {
+function make_arrowstyle(obj, color1, color2) {
     let ao = obj.getContext("2d")
-    
+
     ao.fillStyle = color1
     ao.fillRect(0, 0, 60, 40)
     ao.strokeStyle = color2
     ao.lineWidth = 3
-    
+
     ao.beginPath()
     ao.moveTo(-30, 200)
     ao.lineTo(30, 20)
     ao.lineTo(90, 200)
-    
+
     ao.moveTo(-30, 160)
     ao.lineTo(30, -20)
     ao.lineTo(90, 160)
@@ -96,17 +96,17 @@ function make_arrowstyle (obj, color1, color2) {
     ao.moveTo(-30, 120)
     ao.lineTo(30, -60)
     ao.lineTo(90, 120)
-    
+
     ao.stroke()
 }
 
-function make_downjumpstyle () {
+function make_downjumpstyle() {
     let dn = downstyle.getContext("2d")
     dn.shadowBlur = 10
     dn.shadowColor = palette_down[1]
 
     dn.beginPath()
-    dn.arc(250, 340, 240, 0, 2*Math.PI)
+    dn.arc(250, 340, 240, 0, 2 * Math.PI)
     dn.strokeStyle = palette_down[0]
     dn.lineWidth = 7
     dn.stroke()
@@ -156,13 +156,20 @@ function make_downjumpstyle () {
     jp.fillText("J U M P", 250, 390)
 }
 
-function make_graydot () {
+function make_graydot() {
     let gd = graydot.getContext("2d")
 
-    gd.fillStyle = "dimgray"
-    gd.beginPath()
-    gd.arc(8, 8, 4, 0, 2*Math.PI)
-    gd.fill()
+    // gd.fillStyle = "dimgray"
+    // gd.beginPath()
+    // gd.arc(8, 8, 4, 0, 2 * Math.PI)
+    // gd.fill()
+
+    let gra = gd.createLinearGradient(0, 0, 16, 0)
+    gra.addColorStop(0, "black")
+    gra.addColorStop(0.5, "dimgray")
+    gra.addColorStop(1, "black")
+    gd.fillStyle = gra
+    gd.fillRect(0, 0, 16, 16)
 }
 
 make_lanestyle(lane_orange, palette_orange[0], palette_orange[2])
@@ -175,22 +182,24 @@ make_downjumpstyle()
 make_graydot()
 
 
-$("#judgeline").css({height: (thick * note_thickness + thick_base - 9) + "px"})
-$("#judgeline").css({"background-image": 'url('+graydot.toDataURL()+')'})
+$("#judgeline").css({ height: (thick * note_thickness + thick_base - 9) + "px" })
+$("#judgeline").css({ "background-image": 'url(' + graydot.toDataURL() + ')' })
 
 //lane mask?
 
 const stage = new createjs.Stage(canvas)
-const chart = new createjs.Container()
 const dj = new createjs.Stage(djcvs)
+
+const chart = new createjs.Container()
+
 
 const edge = 38
 const unit = 76
 
-function generate_straight_hold (color, start_time, start_pos, width, length) {
+function generate_straight_hold(color, start_time, start_pos, width, length) {
     if (length > MAX_HOLD_LENGTH) {
-        generate_straight_hold(color, start_time, start_pos, width, length/2)
-        generate_straight_hold(color, start_time+length/2, start_pos, width, length/2)
+        generate_straight_hold(color, start_time, start_pos, width, length / 2)
+        generate_straight_hold(color, start_time + length / 2, start_pos, width, length / 2)
         return
     }
 
@@ -200,21 +209,21 @@ function generate_straight_hold (color, start_time, start_pos, width, length) {
     let ct = new createjs.Container()
 
     let obj = new createjs.Shape()
-    obj.graphics.bf((color=="blue")?lane_blue:lane_orange).r(0, 0, width, length)
-    
+    obj.graphics.bf((color == "blue") ? lane_blue : lane_orange).r(0, 0, width, length)
+
     let mk = new createjs.Shape()
     mk.compositeOperation = "destination-out"
     mk.graphics.lf(["rgba(0, 0, 0, 0.75)", "transparent"], [0, 1], 0, 0, edge, 0).r(0, 0, edge, length)
-    mk.graphics.lf(["rgba(0, 0, 0, 0.75)", "transparent"], [0, 1], width, 0, width-edge, 0).r(width-edge, 0, edge, length)
+    mk.graphics.lf(["rgba(0, 0, 0, 0.75)", "transparent"], [0, 1], width, 0, width - edge, 0).r(width - edge, 0, edge, length)
 
     mk.graphics.lf(["rgba(0, 0, 0, 0.5)", "transparent"], [0, 1], 0, 0, 0, edge).r(0, 0, width, edge)
-    mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], 0, length, 0, length-edge).r(0, length-edge, width, edge)
+    mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], 0, length, 0, length - edge).r(0, length - edge, width, edge)
 
     ct.addChild(obj, mk)
 
     ct.x = start_pos
     ct.y = -start_time
-    
+
     ct.regY = length
 
     // optional caching
@@ -223,10 +232,10 @@ function generate_straight_hold (color, start_time, start_pos, width, length) {
     chart.addChild(ct)
 }
 
-function generate_diagonal_hold (color, start_time, start_pos, start_width, length, end_pos, end_width) {
+function generate_diagonal_hold(color, start_time, start_pos, start_width, length, end_pos, end_width) {
     if (length > MAX_HOLD_LENGTH) {
-        generate_diagonal_hold(color, start_time, start_pos, start_width, length/2, (end_pos+start_pos)/2, (end_width+start_width)/2)
-        generate_diagonal_hold(color, start_time+length/2, (end_pos+start_pos)/2, (end_width+start_width)/2, length/2, end_pos, end_width)
+        generate_diagonal_hold(color, start_time, start_pos, start_width, length / 2, (end_pos + start_pos) / 2, (end_width + start_width) / 2)
+        generate_diagonal_hold(color, start_time + length / 2, (end_pos + start_pos) / 2, (end_width + start_width) / 2, length / 2, end_pos, end_width)
         return
     }
 
@@ -235,25 +244,25 @@ function generate_diagonal_hold (color, start_time, start_pos, start_width, leng
     end_pos *= unit
     end_width *= unit
 
-    let width = Math.max(start_pos+start_width, end_pos+end_width) - Math.min(start_pos, end_pos)
-    let e = Math.max(end_pos-start_pos, 0)
-    let s = Math.max(start_pos-end_pos, 0)
+    let width = Math.max(start_pos + start_width, end_pos + end_width) - Math.min(start_pos, end_pos)
+    let e = Math.max(end_pos - start_pos, 0)
+    let s = Math.max(start_pos - end_pos, 0)
 
     let ct = new createjs.Container()
 
     let obj = new createjs.Shape()
     let bm = new createjs.Bitmap()
 
-    let t = (end_pos+end_width/2)-(start_pos+start_width/2)
+    let t = (end_pos + end_width / 2) - (start_pos + start_width / 2)
     let r = Math.atan2(t, length) * 180 / Math.PI
-    let l = Math.max(start_width, end_width)/60
- 
+    let l = Math.max(start_width, end_width) / 60
+
     bm.x = e - Math.max((start_width - end_width) / 2, 0)
     bm.scaleX = l
-    bm.scaleY = l/2
+    bm.scaleY = l / 2
     bm.skewX = r
 
-    obj.graphics.bf((color=="blue")?arrow_blue:arrow_orange, "repeat-y", bm.getMatrix()).mt(e, 0).lt(e+end_width, 0).lt(s+start_width, length).lt(s, length).ef()
+    obj.graphics.bf((color == "blue") ? arrow_blue : arrow_orange, "repeat-y", bm.getMatrix()).mt(e, 0).lt(e + end_width, 0).lt(s + start_width, length).lt(s, length).ef()
 
     let mk = new createjs.Shape()
     mk.compositeOperation = "destination-out"
@@ -261,7 +270,7 @@ function generate_diagonal_hold (color, start_time, start_pos, start_width, leng
     //mk.graphics.lf(["rgba(0, 0, 0, 0.75)", "transparent"], [0, 1], width, 0, width-edge, 0).r(width-edge, 0, edge, length)
 
     mk.graphics.lf(["rgba(0, 0, 0, 0.5)", "transparent"], [0, 1], 0, 0, 0, edge).r(0, 0, width, edge)
-    mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], 0, length, 0, length-edge).r(0, length-edge, width, edge)
+    mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], 0, length, 0, length - edge).r(0, length - edge, width, edge)
 
     ct.addChild(obj, mk)
 
@@ -277,11 +286,11 @@ function generate_diagonal_hold (color, start_time, start_pos, start_width, leng
 
 function generate_L_slide(color, start_time, start_pos, end_pos) {
     let thickness = hispeed * speed_mul + speed_base
-    
+
     start_pos *= unit
     end_pos *= unit
 
-    let width = Math.abs(start_pos-end_pos)
+    let width = Math.abs(start_pos - end_pos)
 
     let ct = new createjs.Container()
     let obj = new createjs.Shape()
@@ -291,17 +300,17 @@ function generate_L_slide(color, start_time, start_pos, end_pos) {
     bm.scale = thickness / 60
     bm.rotation = (start_pos > end_pos) ? -90 : 90
 
-    obj.graphics.bf((color=="blue")?arrow_blue:arrow_orange, "repeat", bm.getMatrix()).r(0, 0, width, thickness)
+    obj.graphics.bf((color == "blue") ? arrow_blue : arrow_orange, "repeat", bm.getMatrix()).r(0, 0, width, thickness)
 
     let mk = new createjs.Shape()
     mk.compositeOperation = "destination-out"
     if (start_pos > end_pos) { // left or right dim
-        mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], 0, 0, edge*2, 0).r(0, 0, edge*2, thickness)
+        mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], 0, 0, edge * 2, 0).r(0, 0, edge * 2, thickness)
     }
     else {
-        mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], width, 0, width-edge*2, 0).r(width-edge*2, 0, edge*2, thickness)
+        mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], width, 0, width - edge * 2, 0).r(width - edge * 2, 0, edge * 2, thickness)
     }
-    
+
     // top and bottom dim
     mk.graphics.lf(["rgba(0, 0, 0, 0.5)", "transparent"], [0, 1], 0, 0, 0, edge).r(0, 0, width, edge)
 
@@ -312,22 +321,22 @@ function generate_L_slide(color, start_time, start_pos, end_pos) {
 
     ct.regY = thickness
     ct.cache(0, 0, width, thickness)
-    
+
     chart.addChild(ct)
 }
 
-function generate_note (color, start_time, start_pos, end_pos) {
+function generate_note(color, start_time, start_pos, end_pos) {
     let thickness = note_thickness * thick + thick_base
 
     start_pos *= unit
     end_pos *= unit
 
-    let width = Math.abs(start_pos-end_pos)
+    let width = Math.abs(start_pos - end_pos)
 
     let obj = new createjs.Shape()
 
-    obj.graphics.s("black").ss(5).f("white").rr(5, 5, width-10, thickness-10, 10)
-    obj.graphics.lf((color=="blue"?[palette_blue[1], palette_blue[2]]:[palette_orange[1], palette_orange[2]]), [0, 1], (width-unit)/2, 0, (width+unit)/2, thickness).s("transparent").rr(5, 5, width-10, thickness-19, 10)
+    obj.graphics.s("black").ss(5).f("white").rr(5, 5, width - 10, thickness - 10, 10)
+    obj.graphics.lf((color == "blue" ? [palette_blue[1], palette_blue[2]] : [palette_orange[1], palette_orange[2]]), [0, 1], (width - unit) / 2, 0, (width + unit) / 2, thickness).s("transparent").rr(5, 5, width - 10, thickness - 19, 10)
 
     obj.x = Math.min(start_pos, end_pos)
     obj.y = -start_time
@@ -339,60 +348,61 @@ function generate_note (color, start_time, start_pos, end_pos) {
     chart.addChild(obj)
 }
 
-function generate_downjump (type, start_time) {
+function generate_downjump(type, start_time) {
     let thickness = note_thickness * thick + thick_base
 
     let obj = new createjs.Shape()
 
-    obj.graphics.s("black").ss(5).f("white").rr(5, 5, 1206, thickness-10, 10)
-    obj.graphics.lf((type=="jump"?[palette_jump[0], palette_jump[1]]:[palette_down[0], palette_down[1]]), [0, 1], 0, 0, 0, thickness).s("transparent").rr(5, 5, 1206, thickness-19, 10)
+    obj.graphics.s("black").ss(5).f("white").rr(5, 5, 1206, thickness - 10, 10)
+    obj.graphics.lf((type == "jump" ? [palette_jump[0], palette_jump[1]] : [palette_down[0], palette_down[1]]), [0, 1], 0, 0, 0, thickness).s("transparent").rr(5, 5, 1206, thickness - 19, 10)
 
     obj.x = 0
     obj.y = -start_time
 
     obj.regY = thickness
 
+    obj.cache(0, 0, 1216, thickness)
+    chart.addChild(obj)
+
+    // the following code generates ring and arrows for down/jump
+
     let ring = new createjs.Shape()
 
-    ring.graphics.bf((type=="jump"?jumpstyle:downstyle)).r(0, 0, 500, 400)
+    ring.graphics.bf((type == "jump" ? jumpstyle : downstyle)).r(0, 0, 500, 400)
     ring.x = 0
     ring.y = 0
     ring.regY = 400
 
-    if ("content" in document.createElement("template")) {
-        let f = $("#flit-tp").clone()
-        f.attr("id", "f"+dj_counter)
-        f.appendTo(poscheck)
-        let fn = $("#f"+dj_counter)
-        let dot = $("#f" + dj_counter + " .dot")
-        obj.addEventListener("tick", ()=>{
-            let b = start_time-chart.y
+    let f = $("#flit-tp").clone()
+    f.attr("id", "f" + dj_counter)
+    f.appendTo(poscheck)
+    let fn = $("#f" + dj_counter)
+    let dot = $("#f" + dj_counter + " .dot")
 
-            if (b > 6000 || b < -1000) {
-                ring.visible = false
-                return
-            }  
+    ring.addEventListener("tick", () => {
+        let b = start_time - chart.y
 
-            ring.visible = true
-            let cam = $("#camera").offset()
-            
-            fn.css({bottom: b}) 
-            ring.y = fn.offset().top - cam.top
-            ring.x = fn.offset().left - cam.left
-            ring.scale = dot.position().left / 500
-            //console.log(dot.position().left)
-        })
-        dj_counter++
-    }
+        if (b > 6000 || b < -1000) {
+            ring.visible = false
+            return
+        }
 
-    obj.cache(0, 0, 1216, thickness)
+        ring.visible = true
+        let cam = $("#camera").offset()
+
+        fn.css({ bottom: b })
+        ring.y = fn.offset().top - cam.top
+        ring.x = fn.offset().left - cam.left
+        ring.scale = dot.position().left / 500
+    })
+
+    dj_counter++
+
     ring.cache(0, 0, 500, 400)
-
     dj.addChild(ring)
-    chart.addChild(obj)
 }
 
-function generate_barline (start_time) {
+function generate_barline(start_time) {
     let obj = new createjs.Shape()
     obj.graphics.f("white").r(0, 0, 1216, 5)
 
@@ -496,7 +506,6 @@ stage.regY = -ctx_height
 
 stage.addChild(chart)
 
-
 // set fps to fit the running environment
 // Ticker.framerate might be obsolete but I'm adding that just in case
 createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED
@@ -505,7 +514,7 @@ createjs.Ticker.addEventListener("tick", tick_handler)
 
 let timestart
 
-$(document).ready(()=>{
+$(document).ready(() => {
     setTimeout(() => {
         enable_tick_handler = true
         timestart = new Date()
@@ -532,12 +541,12 @@ fps_counter.addChild(t)
 
 
 // stage updater
-function tick_handler (event) {
+function tick_handler(event) {
     if (!enable_tick_handler) return
 
     // this is for calculating the flow speed, which must be done with event.delta to prevent frame glitch
     // after adding the control buttons this will be removed/changed
-    chart.y += (flowspeed*hispeed*event.delta/1000)
+    chart.y += (flowspeed * hispeed * event.delta / 1000)
 
     // don't touch this
     stage.update()
@@ -548,8 +557,8 @@ function tick_handler (event) {
 setInterval(() => {
     let tp = ((new Date()) - timestart)
     let ps = chart.y.toFixed(3)
-    let espflow = flowspeed*hispeed
-    let trueflow = (ps/tp*1000).toFixed(2)
+    let espflow = flowspeed * hispeed
+    let trueflow = (ps / tp * 1000).toFixed(2)
 
     t.text = "FPS: " + createjs.Ticker.getMeasuredFPS().toFixed(2) + "\n"
         + "Speed: " + hispeed.toFixed(1) + "x\n"
@@ -559,6 +568,6 @@ setInterval(() => {
         + "\n"
         + "Exp. flow: " + espflow + "\n"
         + "True flow: " + trueflow + "\n"
-        + "delta.flow: " + Math.abs(espflow-trueflow).toFixed(2)
+        + "delta.flow: " + Math.abs(espflow - trueflow).toFixed(2)
     fps_counter.update()
 }, 250);
