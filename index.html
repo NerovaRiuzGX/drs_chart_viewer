@@ -2,7 +2,7 @@
 <html>
     <head>
         <meta charset="UTF-8">
-        <title>DANCERUSH STARDOM chart viewer alpa version</title>
+        <title>DANCERUSH STARDOM chart viewer alpha version</title>
         <link rel="stylesheet" href="./css/style.css">
     </head>
     <body>
@@ -18,6 +18,7 @@
                         <div id="judgeline"></div>
                         <div id="canv">
                             <canvas id="cont" width="1216px" height="6000px"></canvas>
+                            <canvas id="test" width="608px" height="3000px"></canvas>
                             <div id="poscheck" width="1216px"></div>
                         </div>
                     </div>
@@ -41,6 +42,31 @@
             <canvas id="graydot" width="16px" height="16px"></canvas>
         </div>
         
+        <div id="controls">
+            <div>
+                Timing Mode: 
+                <select onchange="change_timing_mode(this)">
+                    <option value="0" selected="selected">SYNCHED</option>
+                    <option value="1">RAF</option>
+                    <option value="2">RAF_SYNCHED</option>
+                    <option value="3">TIMEOUT</option>
+                </select>
+            </div>
+
+            <div>
+                Target FPS: 
+                <select onchange="change_target_FPS(this)">
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="60" selected="selected">60</option>
+                    <option value="120">120</option>
+                </select>
+            </div>
+            
+            <button type="button" onclick="reset()">reset</button>
+            
+        </div>
+
         <div id="flit-tp" class="flit">
             <div class="dot"></div>
         </div>

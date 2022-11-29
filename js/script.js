@@ -13,7 +13,7 @@ var dj_counter = 0
 // settings
 
 var note_thickness = 3
-var hispeed = 1
+var hispeed = 3.5
 
 var thick = 13
 var thick_base = 10
@@ -25,8 +25,14 @@ var flowspeed = 1000
 
 var cache_all_object = false
 var enable_tick_handler = false
+var timing_mode = [
+    createjs.Ticker.SYNCHED,
+    createjs.Ticker.RAF,
+    createjs.Ticker.RAF_SYNCHED,
+    createjs.Ticker.TIMEOUT
+]
 
-const MAX_HOLD_LENGTH = 32767
+const MAX_HOLD_LENGTH = 6000
 
 
 // still missing: judge lift
@@ -185,13 +191,21 @@ make_graydot()
 $("#judgeline").css({ height: (thick * note_thickness + thick_base - 9) + "px" })
 $("#judgeline").css({ "background-image": 'url(' + graydot.toDataURL() + ')' })
 
-//lane mask?
 
 const stage = new createjs.Stage(canvas)
 const dj = new createjs.Stage(djcvs)
 
+// main container
 const chart = new createjs.Container()
 
+// creating four layers for layering
+const layer = [
+    new createjs.Container(),
+    new createjs.Container(),
+    new createjs.Container(),
+    new createjs.Container(),
+    new createjs.Container()
+]
 
 const edge = 38
 const unit = 76
@@ -223,13 +237,13 @@ function generate_straight_hold(color, start_time, start_pos, width, length) {
 
     ct.x = start_pos
     ct.y = -start_time
-
     ct.regY = length
-
     // optional caching
     if (cache_all_object) ct.cache(0, 0, width, length)
 
-    chart.addChild(ct)
+    ct.visible = false
+
+    layer[1].addChild(ct)
 }
 
 function generate_diagonal_hold(color, start_time, start_pos, start_width, length, end_pos, end_width) {
@@ -270,18 +284,18 @@ function generate_diagonal_hold(color, start_time, start_pos, start_width, lengt
     //mk.graphics.lf(["rgba(0, 0, 0, 0.75)", "transparent"], [0, 1], width, 0, width-edge, 0).r(width-edge, 0, edge, length)
 
     mk.graphics.lf(["rgba(0, 0, 0, 0.5)", "transparent"], [0, 1], 0, 0, 0, edge).r(0, 0, width, edge)
-    mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], 0, length, 0, length - edge).r(0, length - edge, width, edge)
+    // mk.graphics.lf(["rgba(0, 0, 0, 1)", "transparent"], [0, 1], 0, length, 0, length - edge).r(0, length - edge, width, edge)
 
     ct.addChild(obj, mk)
 
     ct.x = Math.min(start_pos, end_pos)
     ct.y = -start_time
-
     ct.regY = length
-
     if (cache_all_object) ct.cache(0, 0, width, length)
 
-    chart.addChild(ct)
+    ct.visible = false
+
+    layer[1].addChild(ct)
 }
 
 function generate_L_slide(color, start_time, start_pos, end_pos) {
@@ -318,11 +332,12 @@ function generate_L_slide(color, start_time, start_pos, end_pos) {
 
     ct.x = Math.min(start_pos, end_pos)
     ct.y = -start_time
-
     ct.regY = thickness
-    ct.cache(0, 0, width, thickness)
+    if (cache_all_object) ct.cache(0, 0, width, thickness)
 
-    chart.addChild(ct)
+    ct.visible = false
+
+    layer[2].addChild(ct)
 }
 
 function generate_note(color, start_time, start_pos, end_pos) {
@@ -340,12 +355,12 @@ function generate_note(color, start_time, start_pos, end_pos) {
 
     obj.x = Math.min(start_pos, end_pos)
     obj.y = -start_time
-
     obj.regY = thickness
-
     obj.cache(0, 0, width, thickness)
 
-    chart.addChild(obj)
+    obj.visible = false
+
+    layer[4].addChild(obj)
 }
 
 function generate_downjump(type, start_time) {
@@ -358,11 +373,11 @@ function generate_downjump(type, start_time) {
 
     obj.x = 0
     obj.y = -start_time
-
     obj.regY = thickness
-
     obj.cache(0, 0, 1216, thickness)
-    chart.addChild(obj)
+
+    obj.visible = false
+    layer[3].addChild(obj)
 
     // the following code generates ring and arrows for down/jump
 
@@ -380,16 +395,17 @@ function generate_downjump(type, start_time) {
     let dot = $("#f" + dj_counter + " .dot")
 
     ring.addEventListener("tick", () => {
+        let cam = $("#camera").offset()
+
         let b = start_time - chart.y
 
-        if (b > 6000 || b < -1000) {
+        if (b > 6000 || b < 0) {
             ring.visible = false
             return
         }
 
         ring.visible = true
-        let cam = $("#camera").offset()
-
+        
         fn.css({ bottom: b })
         ring.y = fn.offset().top - cam.top
         ring.x = fn.offset().left - cam.left
@@ -408,12 +424,32 @@ function generate_barline(start_time) {
 
     obj.x = 0
     obj.y = -start_time
-
     obj.regY = 5
-
     obj.cache(0, 0, 1216, 5)
-    chart.addChild(obj)
+
+    obj.visible = false
+    layer[0].addChild(obj)
 }
+
+generate_note("orange", 140, 2, 7)
+generate_note("orange", 1000, 4, 8)
+generate_note("blue", 2000, 8, 12)
+generate_note("blue", 3000, 12, 16)
+
+generate_note("orange", 5860, 8, 12)
+generate_note("orange", 2500, 6, 10)
+generate_note("orange", 2000, 5, 14)
+generate_note("orange", 1500, 4, 8)
+
+generate_note("orange", 3140, 2, 7)
+generate_note("orange", 7000, 4, 8)
+generate_note("blue", 12000, 8, 12)
+generate_note("blue", 33000, 12, 16)
+
+generate_note("orange", 55860, 8, 12)
+generate_note("blue", 82500, 6, 10)
+generate_note("orange", 42000, 5, 10)
+generate_note("blue", 31500, 4, 8)
 
 generate_barline(2250)
 generate_barline(1250)
@@ -443,26 +479,6 @@ generate_diagonal_hold("orange", 1250000, 12, 4, 50000, 7, 5)
 generate_L_slide("orange", 1000, 3, 13)
 generate_L_slide("orange", 500, 2, 10)
 generate_L_slide("blue", 2000, 11, 3)
-
-generate_note("orange", 140, 2, 7)
-generate_note("orange", 1000, 4, 8)
-generate_note("blue", 2000, 8, 12)
-generate_note("blue", 3000, 12, 16)
-
-generate_note("orange", 5860, 8, 12)
-generate_note("orange", 2500, 6, 10)
-generate_note("orange", 2000, 5, 14)
-generate_note("orange", 1500, 4, 8)
-
-generate_note("orange", 3140, 2, 7)
-generate_note("orange", 7000, 4, 8)
-generate_note("blue", 12000, 8, 12)
-generate_note("blue", 33000, 12, 16)
-
-generate_note("orange", 55860, 8, 12)
-generate_note("blue", 82500, 6, 10)
-generate_note("orange", 42000, 5, 10)
-generate_note("blue", 31500, 4, 8)
 
 
 generate_downjump("jump", 100000)
@@ -504,11 +520,41 @@ generate_downjump("down", 150000)
 // move the register point to the bottom, then add chart to the stage
 stage.regY = -ctx_height
 
+// sort everything by start time
+layer.forEach(element=>{
+    element.sortChildren((a, b)=>{return (b.y - a.y)})
+})
+
+chart.addChild(layer[0], layer[1], layer[2], layer[3], layer[4])
 stage.addChild(chart)
+
+let blocker = [0, 0, 0, 0, 0]
+
+// dynamic loader
+stage.addEventListener("tick", () => {
+    layer.forEach((element, index)=>{
+        for (var i=blocker[index]; i<element.numChildren; i++) {
+            let child = element.getChildAt(i)
+            let diff = chart.y + child.y
+
+            if (diff > MAX_HOLD_LENGTH) {
+                child.visible = false
+                blocker[index]++
+            }
+            else if (diff > -6000) {
+                if (!child.isVisible()) {
+                    child.visible = true
+                    break
+                }
+            }
+            else break
+        }
+    })
+});
 
 // set fps to fit the running environment
 // Ticker.framerate might be obsolete but I'm adding that just in case
-createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED
+createjs.Ticker.timingMode = timing_mode[0]
 createjs.Ticker.framerate = fps
 createjs.Ticker.addEventListener("tick", tick_handler)
 
@@ -520,8 +566,6 @@ $(document).ready(() => {
         timestart = new Date()
     }, 3000);
 })
-
-
 
 // temporary fps counter on the top left
 const fps_counter = new createjs.Stage("fps")
@@ -540,24 +584,25 @@ t.y = 5
 fps_counter.addChild(t)
 
 
+// pre-calculate the exp. flow
+let expflow = flowspeed * hispeed / 1000
+
 // stage updater
 function tick_handler(event) {
     if (!enable_tick_handler) return
 
     // this is for calculating the flow speed, which must be done with event.delta to prevent frame glitch
     // after adding the control buttons this will be removed/changed
-    chart.y += (flowspeed * hispeed * event.delta / 1000)
+    chart.y += (expflow * event.delta)
 
     // don't touch this
     stage.update()
     dj.update()
 }
 
-
 setInterval(() => {
     let tp = ((new Date()) - timestart)
     let ps = chart.y.toFixed(3)
-    let espflow = flowspeed * hispeed
     let trueflow = (ps / tp * 1000).toFixed(2)
 
     t.text = "FPS: " + createjs.Ticker.getMeasuredFPS().toFixed(2) + "\n"
@@ -566,8 +611,23 @@ setInterval(() => {
         + "Pos: " + ps + "\n"
         + "Time: " + tp
         + "\n"
-        + "Exp. flow: " + espflow + "\n"
+        + "Exp. flow: " + expflow * 1000 + "\n"
         + "True flow: " + trueflow + "\n"
-        + "delta.flow: " + Math.abs(espflow - trueflow).toFixed(2)
     fps_counter.update()
 }, 250);
+
+function reset() {
+    chart.y = 0
+    timestart = new Date()
+    blocker = [0, 0, 0, 0, 0]
+}
+
+function change_timing_mode(obj) {
+    createjs.Ticker.timingMode = timing_mode[obj.value]
+    reset()
+}
+
+function change_target_FPS(obj) {
+    createjs.Ticker.framerate = obj.value
+    reset()
+}
