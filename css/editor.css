@@ -1,0 +1,43 @@
+body {
+    background: #20262E;
+    padding: 20px;
+    font-family: 微軟正黑體,Helvetica;
+    color: white;
+}
+
+html{
+    margin: 0;
+    padding: 0;
+}
+canvas{
+    display: block;
+    background: #777;
+}
+.menuarea,.editarea,.textarea{
+    height: 94vh;
+}
+#editor{
+    height: 85vh;
+    width: 100%;
+    background: #FFF;
+}
+.menuarea{
+    text-align: right;
+}
+.darkchange{
+    fill:currentColor;
+}
+.btn-svg{
+    padding: 0.375rem 0.375rem;
+    height: 38px;
+}
+.modal{
+    color:black;
+}
+u{    
+    border-bottom: 1px dotted #000;
+    text-decoration: none;
+}
+#slider,#cvs{
+    display: inline-block;/* */
+}

@@ -168,8 +168,6 @@ $("#judgeline").css({"background-image": 'url('+graydot.toDataURL()+')'})
 
 //lane mask?
 
-
-
 const orange_pattern = ctx.createPattern(lane_orange, "repeat")
 const blue_pattern = ctx.createPattern(lane_blue, "repeat")
 

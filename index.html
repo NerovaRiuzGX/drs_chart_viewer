@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title>DANCERUSH STARDOM chart viewer alpa version</title>
-        <link rel="stylesheet" href="style.css">
+        <link rel="stylesheet" href="./css/style.css">
     </head>
     <body>
         <div id="camera">
@@ -17,27 +17,36 @@
                         <div class="lane"></div>
                         <div id="judgeline"></div>
                         <div id="canv">
-                            <canvas id="cont" width="1216px" style="display: none;"></canvas>
-                            <canvas id="viewer" width="1216px" height="6000px" style="position: absolute; bottom: 0;"></canvas>
+                            <canvas id="cont" width="1216px" height="6000px"></canvas>
                             <div id="poscheck" width="1216px"></div>
                         </div>
                     </div>
                     <div class="shoulder"></div>
                 </div>
                 <div id="downjump"></div>
+                
             </div>
+            
+            <canvas id="dj-handler" width="1280px" height="720px" style="position: absolute; bottom: 0"></canvas>
             <div id="metadata"></div>
+            <canvas id="fps" width="200px" height="200px" style="position: absolute; top: 0; left: 0"></canvas>
         </div>
         <div id="patterns">
             <canvas id="lanestyle-orange" width="15px" height="10px" ></canvas>
             <canvas id="lanestyle-blue" width="15px" height="10px" ></canvas>
             <canvas id="arrowstyle-orange" width="60px" height="40px" ></canvas>
             <canvas id="arrowstyle-blue" width="60px" height="40px" ></canvas>
-            <canvas id="downstyle" width="500px" height="500px"></canvas>
-            <canvas id="jumpstyle" width="500px" height="500px"></canvas>
+            <canvas id="downstyle" width="500px" height="400px"></canvas>
+            <canvas id="jumpstyle" width="500px" height="400px"></canvas>
             <canvas id="graydot" width="16px" height="16px"></canvas>
         </div>
+        
+        <div id="flit-tp" class="flit">
+            <div class="dot"></div>
+        </div>
+    
     </body>
-    <script src="./jquery-3.6.1.min.js"></script>
-    <script src="./script.js"></script>
+    <script src="./js/jquery-3.6.1.min.js"></script>
+    <script src="./js/easeljs.min.js"></script>
+    <script src="./js/script.js"></script>
 </html>
