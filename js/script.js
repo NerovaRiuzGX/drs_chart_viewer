@@ -23,7 +23,10 @@ var speed_base = 42
 var fps = 60
 var flowspeed = 1000
 
-var test_run = false
+var cache_all_object = false
+var enable_tick_handler = false
+
+const MAX_HOLD_LENGTH = 32767
 
 
 // still missing: judge lift
@@ -185,6 +188,12 @@ const edge = 38
 const unit = 76
 
 function generate_straight_hold (color, start_time, start_pos, width, length) {
+    if (length > MAX_HOLD_LENGTH) {
+        generate_straight_hold(color, start_time, start_pos, width, length/2)
+        generate_straight_hold(color, start_time+length/2, start_pos, width, length/2)
+        return
+    }
+
     width *= unit
     start_pos *= unit
 
@@ -208,12 +217,19 @@ function generate_straight_hold (color, start_time, start_pos, width, length) {
     
     ct.regY = length
 
-    //ct.cache(0, 0, width, length)
-    //ct.updateCache()
+    // optional caching
+    if (cache_all_object) ct.cache(0, 0, width, length)
+
     chart.addChild(ct)
 }
 
 function generate_diagonal_hold (color, start_time, start_pos, start_width, length, end_pos, end_width) {
+    if (length > MAX_HOLD_LENGTH) {
+        generate_diagonal_hold(color, start_time, start_pos, start_width, length/2, (end_pos+start_pos)/2, (end_width+start_width)/2)
+        generate_diagonal_hold(color, start_time+length/2, (end_pos+start_pos)/2, (end_width+start_width)/2, length/2, end_pos, end_width)
+        return
+    }
+
     start_pos *= unit
     start_width *= unit
     end_pos *= unit
@@ -254,7 +270,8 @@ function generate_diagonal_hold (color, start_time, start_pos, start_width, leng
 
     ct.regY = length
 
-    //ct.cache(0, 0, width, length)
+    if (cache_all_object) ct.cache(0, 0, width, length)
+
     chart.addChild(ct)
 }
 
@@ -287,7 +304,6 @@ function generate_L_slide(color, start_time, start_pos, end_pos) {
     
     // top and bottom dim
     mk.graphics.lf(["rgba(0, 0, 0, 0.5)", "transparent"], [0, 1], 0, 0, 0, edge).r(0, 0, width, edge)
-    //mk.graphics.lf(["rgba(0, 0, 0, 0.5)", "transparent"], [0, 1], 0, thickness, 0, thickness-edge).r(0, thickness-edge, width, edge)
 
     ct.addChild(obj, mk)
 
@@ -295,7 +311,7 @@ function generate_L_slide(color, start_time, start_pos, end_pos) {
     ct.y = -start_time
 
     ct.regY = thickness
-    //ct.cache(0, 0, width, thickness)
+    ct.cache(0, 0, width, thickness)
     
     chart.addChild(ct)
 }
@@ -318,7 +334,7 @@ function generate_note (color, start_time, start_pos, end_pos) {
 
     obj.regY = thickness
 
-    //obj.cache(0, 0, width, thickness)
+    obj.cache(0, 0, width, thickness)
 
     chart.addChild(obj)
 }
@@ -335,8 +351,6 @@ function generate_downjump (type, start_time) {
     obj.y = -start_time
 
     obj.regY = thickness
-
-    //obj.cache(0, 0, 1216, thickness)    
 
     let ring = new createjs.Shape()
 
@@ -371,6 +385,9 @@ function generate_downjump (type, start_time) {
         dj_counter++
     }
 
+    obj.cache(0, 0, 1216, thickness)
+    ring.cache(0, 0, 500, 400)
+
     dj.addChild(ring)
     chart.addChild(obj)
 }
@@ -384,7 +401,7 @@ function generate_barline (start_time) {
 
     obj.regY = 5
 
-    //obj.cache(0, 0, 1216, 5)
+    obj.cache(0, 0, 1216, 5)
     chart.addChild(obj)
 }
 
@@ -474,25 +491,28 @@ generate_downjump("down", 120000)
 generate_downjump("jump", 130000)
 generate_downjump("down", 150000)
 
-var x=0;
-
 // move the register point to the bottom, then add chart to the stage
 stage.regY = -ctx_height
+
 stage.addChild(chart)
+
 
 // set fps to fit the running environment
 // Ticker.framerate might be obsolete but I'm adding that just in case
-createjs.Ticker.timingMode = createjs.Ticker.RAF
+createjs.Ticker.timingMode = createjs.Ticker.RAF_SYNCHED
 createjs.Ticker.framerate = fps
+createjs.Ticker.addEventListener("tick", tick_handler)
 
 let timestart
 
 $(document).ready(()=>{
     setTimeout(() => {
-        createjs.Ticker.addEventListener("tick", tick_handler)
+        enable_tick_handler = true
         timestart = new Date()
     }, 3000);
 })
+
+
 
 // temporary fps counter on the top left
 const fps_counter = new createjs.Stage("fps")
@@ -511,9 +531,10 @@ t.y = 5
 fps_counter.addChild(t)
 
 
-
 // stage updater
 function tick_handler (event) {
+    if (!enable_tick_handler) return
+
     // this is for calculating the flow speed, which must be done with event.delta to prevent frame glitch
     // after adding the control buttons this will be removed/changed
     chart.y += (flowspeed*hispeed*event.delta/1000)
@@ -521,9 +542,14 @@ function tick_handler (event) {
     // don't touch this
     stage.update()
     dj.update()
+}
 
+
+setInterval(() => {
     let tp = ((new Date()) - timestart)
     let ps = chart.y.toFixed(3)
+    let espflow = flowspeed*hispeed
+    let trueflow = (ps/tp*1000).toFixed(2)
 
     t.text = "FPS: " + createjs.Ticker.getMeasuredFPS().toFixed(2) + "\n"
         + "Speed: " + hispeed.toFixed(1) + "x\n"
@@ -531,8 +557,8 @@ function tick_handler (event) {
         + "Pos: " + ps + "\n"
         + "Time: " + tp
         + "\n"
-        + "Exp. flow: " + flowspeed*hispeed + "\n"
-        + "True flow: " + (ps/tp*1000).toFixed(2)
+        + "Exp. flow: " + espflow + "\n"
+        + "True flow: " + trueflow + "\n"
+        + "delta.flow: " + Math.abs(espflow-trueflow).toFixed(2)
     fps_counter.update()
-}
-
+}, 250);

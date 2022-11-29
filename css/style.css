@@ -6,7 +6,7 @@ body {
     width: 1280px;
     height: 720px;
     perspective-origin: bottom;
-    perspective: 61px;
+    perspective: 60px;
 
     background-image: url("./bg_top_pc.png");
     background-size: 100% 100%;
@@ -27,7 +27,7 @@ body {
     width: 1280px;
     height: 6000px;
     transform-origin: bottom;
-    transform: translateZ(1px) rotateX(6deg);
+    transform: rotateX(5.5deg);
     position: absolute;
     bottom: 0;
     outline: 1px solid transparent;
@@ -140,7 +140,7 @@ body {
 }
 
 #patterns {
-    
+    display: none;
 }
 
 #viewer {
