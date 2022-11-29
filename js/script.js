@@ -208,7 +208,7 @@ function generate_straight_hold (color, start_time, start_pos, width, length) {
     
     ct.regY = length
 
-    ct.cache(0, 0, width, length)
+    //ct.cache(0, 0, width, length)
     //ct.updateCache()
     chart.addChild(ct)
 }
@@ -254,7 +254,7 @@ function generate_diagonal_hold (color, start_time, start_pos, start_width, leng
 
     ct.regY = length
 
-    ct.cache(0, 0, width, length)
+    //ct.cache(0, 0, width, length)
     chart.addChild(ct)
 }
 
@@ -295,7 +295,7 @@ function generate_L_slide(color, start_time, start_pos, end_pos) {
     ct.y = -start_time
 
     ct.regY = thickness
-    ct.cache(0, 0, width, thickness)
+    //ct.cache(0, 0, width, thickness)
     
     chart.addChild(ct)
 }
@@ -318,7 +318,7 @@ function generate_note (color, start_time, start_pos, end_pos) {
 
     obj.regY = thickness
 
-    obj.cache(0, 0, width, thickness)
+    //obj.cache(0, 0, width, thickness)
 
     chart.addChild(obj)
 }
@@ -336,7 +336,7 @@ function generate_downjump (type, start_time) {
 
     obj.regY = thickness
 
-    obj.cache(0, 0, 1216, thickness)    
+    //obj.cache(0, 0, 1216, thickness)    
 
     let ring = new createjs.Shape()
 
@@ -384,7 +384,7 @@ function generate_barline (start_time) {
 
     obj.regY = 5
 
-    obj.cache(0, 0, 1216, 5)
+    //obj.cache(0, 0, 1216, 5)
     chart.addChild(obj)
 }
 
@@ -396,8 +396,6 @@ generate_straight_hold("orange", 140, 2, 5, 360)
 generate_straight_hold("orange", 1000, 5, 4, 500)
 generate_straight_hold("blue", 3000, 4, 5, 500)
 generate_straight_hold("blue", 2000, 11, 5, 500)
-
-
 
 generate_diagonal_hold("orange", 26500, 12, 4, 50000, 7, 5)
 generate_diagonal_hold("blue", 86000, 5, 4, 50000, 11, 5)
@@ -493,7 +491,7 @@ $(document).ready(()=>{
     setTimeout(() => {
         createjs.Ticker.addEventListener("tick", tick_handler)
         timestart = new Date()
-    }, 5000);
+    }, 3000);
 })
 
 // temporary fps counter on the top left
