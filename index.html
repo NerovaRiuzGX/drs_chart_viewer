@@ -5,9 +5,12 @@
         <title>DANCERUSH STARDOM chart viewer alpha version</title>
         <link rel="stylesheet" href="./css/style.css">
     </head>
+    
     <body>
+        <!-- the main camera of the chart viewer -->
         <div id="camera">
             <div id="space">
+                <!-- box is tilted -->
                 <div id="box">
                     <div class="shoulder"></div>
                     <div id="lanebox">
@@ -16,6 +19,8 @@
                         <div class="lane"></div>
                         <div class="lane"></div>
                         <div id="judgeline"></div>
+
+                        <!-- canv holds the chart content canvas and the position indicators -->
                         <div id="canv">
                             <canvas id="cont" width="1216px" height="6000px"></canvas>
                             <canvas id="test" width="608px" height="3000px"></canvas>
@@ -24,14 +29,17 @@
                     </div>
                     <div class="shoulder"></div>
                 </div>
-                <div id="downjump"></div>
-                
             </div>
-            
+
+            <!-- the down/jump text canvas handler -->
             <canvas id="dj-handler" width="1280px" height="720px" style="position: absolute; bottom: 0"></canvas>
             <div id="metadata"></div>
+
+            <!-- temporary fps counter -->
             <canvas id="fps" width="200px" height="200px" style="position: absolute; top: 0; left: 0"></canvas>
         </div>
+
+        <!-- here are the canvas made to draw the skin templates of the notes. -->
         <div id="patterns">
             <canvas id="lanestyle-orange" width="15px" height="10px" ></canvas>
             <canvas id="lanestyle-blue" width="15px" height="10px" ></canvas>
@@ -42,6 +50,7 @@
             <canvas id="graydot" width="16px" height="16px"></canvas>
         </div>
         
+        <!-- here (temporarily) lies the options -->
         <div id="controls">
             <div>
                 Timing Mode: 
@@ -64,15 +73,16 @@
             </div>
             
             <button type="button" onclick="reset()">reset</button>
-            
         </div>
 
+        <!-- a simple template for dj position indicators -->
         <div id="flit-tp" class="flit">
             <div class="dot"></div>
         </div>
-    
+        
+        <!-- javascript -->
+        <script src="./js/jquery-3.6.1.min.js"></script>
+        <script src="./js/easeljs.min.js"></script>
+        <script src="./js/script.js"></script>
     </body>
-    <script src="./js/jquery-3.6.1.min.js"></script>
-    <script src="./js/easeljs.min.js"></script>
-    <script src="./js/script.js"></script>
 </html>
