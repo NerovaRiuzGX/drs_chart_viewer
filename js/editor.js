@@ -10,27 +10,29 @@ var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
 const editor = new JSONEditor(document.getElementById("editor"), { mode: "code" });
 
 // default chart
-var chart = [
-    //{type:"tap",time:{int:1,num:1,den:4},lr:"L",width:[3,7]},
-    { type: "tap", time: { int: 2, num: 1, den: 4 }, lr: "R", width: [10, 14] },
-    { type: "tap", time: { int: 2, num: 2, den: 4 }, lr: "L", width: [3, 7] },
-    { type: "tap", time: { int: 2, num: 3, den: 4 }, lr: "R", width: [10, 14] },
-    { type: "tap", time: { int: 2, num: 4, den: 4 }, lr: "L", width: [3, 7] }
+var chart_data = [
+    //{type:"tap",time:{bar:1,num:1,dvs:4},lr:"L",width:[3,7]},
+    { type: "tap", time: { bar: 2, num: 1, dvs: 4 }, lr: "R", width: [10, 14] },
+    { type: "tap", time: { bar: 2, num: 2, dvs: 4 }, lr: "L", width: [3, 7] },
+    { type: "tap", time: { bar: 2, num: 3, dvs: 4 }, lr: "R", width: [10, 14] },
+    { type: "tap", time: { bar: 2, num: 4, dvs: 4 }, lr: "L", width: [3, 7] }
 ];
 
 // canvas and stage (using const)
 const cvs = document.getElementById('cvs');
-cvs.height = 1000
 const stage = new createjs.Stage(cvs);
-stage.enableMouseOver();
+const chart = new createjs.Container()
+const indicate_lines = new createjs.Container()
+const main_ct = new createjs.Container()
 const dummy = new createjs.Shape();
-// was using this whole shit to calculate the length but I'd rather make it stable
-//($(window).height() - parseInt(window.getComputedStyle(document.getElementsByTagName("body")[0]).getPropertyValue('padding-top')) - parseInt(window.getComputedStyle(document.getElementsByTagName("body")[0]).getPropertyValue('padding-bottom')));
+main_ct.addChild(dummy, indicate_lines, chart)
+stage.addChild(main_ct)
 
+stage.enableMouseOver();
 
 // basic size settings
 var note_thick = 10;
-var last_bar = chart[chart.length - 1].time.int;
+var last_bar = chart_data[chart_data.length - 1].time.bar;
 var bar_height = 500;
 
 var chart_height = last_bar * bar_height;
@@ -56,8 +58,10 @@ var adddwn = false;
 var addjmp = false;
 
 // edit type
-var edit = "add";
-var sliderY = 0;
+var edit_mode = ["add", "delete", "nudgeV", "nudgeH", "stretchL", "stretchR"]
+var edit = "";
+var slider_steps = 10
+var slider_offsetY = 0
 
 // color scheme, must use color codes for string concat
 var lcolor = "#FFAA33";
@@ -78,7 +82,7 @@ var newtap = function (x) {
     var tap = new createjs.Shape();
     tap.graphics.f((x.lr == "L") ? lcolor : rcolor).rr(
         ((x.width[0] - 1) * (block_width)),
-        (bar_height * (last_bar - x.time.int + 1) - ((x.time.num - 1) * bar_height / x.time.den) - note_thick),
+        (bar_height * (last_bar - x.time.bar + 1) - ((x.time.num - 1) * bar_height / x.time.dvs) - note_thick),
         ((x.width[1] - x.width[0] + 1) * (block_width)),
         note_thick,
         2
@@ -97,7 +101,7 @@ var newtap = function (x) {
 
     tap.on("mousedown", function (evt) {
         this.parent.addChild(this);
-        var dummyY = evt.stageY + sliderY;
+        var dummyY = evt.stageY - slider_offsetY;
         this.offset = { x: this.x - evt.stageX, y: this.y - dummyY, px: Math.round(evt.stageX * 16 / chart_width) - x.width[0] };
         if (addhld.start && !addhld.clicked) {
             addhld.clicked = true;
@@ -129,9 +133,9 @@ var newtap = function (x) {
             x.width = [left, left + width];
             evt.target.graphics.command.x = (left - 1) * block_width;
         } else if (edit == "nudgeV") {
-            var dummyY = evt.stageY + sliderY;
+            var dummyY = evt.stageY - slider_offsetY;
             var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-            x.time = { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor };
+            x.time = { bar: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, dvs: note_divisor };
             evt.target.y = time * bar_height / note_divisor + Math.floor(this.offset.y * note_divisor / bar_height) * bar_height / note_divisor;
         }
         update = true;
@@ -140,12 +144,12 @@ var newtap = function (x) {
     tap.on("dblclick", function (evt) {
         if (edit == "delete") {
             remove(x);
-            stage.removeChild(tap);
+            chart.removeChild(tap);
             update = true;
         }
     });
 
-    stage.addChild(tap);
+    chart.addChild(tap);
     update = true;
 };
 
@@ -154,13 +158,13 @@ var newhold = function (x, prev) {
     hold.compositeOperation = "destination-over";
     hold.graphics.f((x.lr == "L") ? lholdc : rholdc)
         .moveTo((prev.width[0] * 2 - 1) * (edge_fallback),
-            (bar_height * (last_bar - prev.time.int + 1) - (prev.time.num - 1) * bar_height / prev.time.den))
+            (bar_height * (last_bar - prev.time.bar + 1) - (prev.time.num - 1) * bar_height / prev.time.dvs))
         .lineTo((prev.width[1] * 2 - 1) * (edge_fallback),
-            (bar_height * (last_bar - prev.time.int + 1) - (prev.time.num - 1) * bar_height / prev.time.den))
+            (bar_height * (last_bar - prev.time.bar + 1) - (prev.time.num - 1) * bar_height / prev.time.dvs))
         .lineTo((x.width[1] * 2 - 1) * (edge_fallback),
-            (bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den))
+            (bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs))
         .lineTo((x.width[0] * 2 - 1) * (edge_fallback),
-            (bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den))
+            (bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs))
         .closePath();
 
     hold.on("mouseover", function (evt) {
@@ -177,7 +181,7 @@ var newhold = function (x, prev) {
 
     hold.on("mousedown", function (evt) {
         this.parent.addChild(this);
-        var dummyY = evt.stageY + sliderY;
+        var dummyY = evt.stageY - slider_offsetY;
         this.offset = { x: this.x - evt.stageX, y: this.y - dummyY };
         if (addhld.start && !addhld.clicked) {
             addhld.clicked = true;
@@ -208,19 +212,19 @@ var newhold = function (x, prev) {
             if (left <= 0) left = 1;
             x.width = [left, left + width];
         } else if (edit == "nudgeV") {
-            var dummyY = evt.stageY + sliderY;
+            var dummyY = evt.stageY - slider_offsetY;
             var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-            x.time = { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor };
+            x.time = { bar: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, dvs: note_divisor };
         }
         hold.graphics.c().f((x.lr == "L") ? lholdc : rholdc)
             .moveTo((prev.width[0] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - prev.time.int + 1) - (prev.time.num - 1) * bar_height / prev.time.den))
+                (bar_height * (last_bar - prev.time.bar + 1) - (prev.time.num - 1) * bar_height / prev.time.dvs))
             .lineTo((prev.width[1] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - prev.time.int + 1) - (prev.time.num - 1) * bar_height / prev.time.den))
+                (bar_height * (last_bar - prev.time.bar + 1) - (prev.time.num - 1) * bar_height / prev.time.dvs))
             .lineTo((x.width[1] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den))
+                (bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs))
             .lineTo((x.width[0] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den))
+                (bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs))
             .closePath();
         update = true;
     });
@@ -228,12 +232,12 @@ var newhold = function (x, prev) {
     hold.on("dblclick", function (evt) {
         if (edit == "delete") {
             remove(x);
-            stage.removeChild(hold);
+            chart.removeChild(hold);
             update = true;
         }
     });
 
-    stage.addChild(hold);
+    chart.addChild(hold);
     update = true;
 };
 
@@ -241,7 +245,7 @@ var newslide = function (x, prev) {
     var slide = new createjs.Shape();
     slide.graphics.f((x.lr == "L") ? lcolor : rcolor).r(
         (x.from[0] * 2 - 1) * (edge_fallback),
-        bar_height * (last_bar - prev.time.int + 1) - (prev.time.num - 1) * bar_height / x.time.den - note_thick * 2,
+        bar_height * (last_bar - prev.time.bar + 1) - (prev.time.num - 1) * bar_height / x.time.dvs - note_thick * 2,
         (x.from[1] - x.from[0]) * (block_width),
         note_thick * 2
     );
@@ -259,7 +263,7 @@ var newslide = function (x, prev) {
 
     slide.on("mousedown", function (evt) {
         this.parent.addChild(this);
-        var dummyY = evt.stageY + sliderY;
+        var dummyY = evt.stageY - slider_offsetY;
         this.offset = { x: this.x - evt.stageX, y: this.y - dummyY };
         if (addhld.start & !addhld.clicked) {
             addhld.clicked = true;
@@ -287,19 +291,19 @@ var newslide = function (x, prev) {
             if (left <= 0) left = 1;
             x.width = [left, left + width];
         } else if (edit == "nudgeV") {
-            var dummyY = evt.stageY + sliderY;
+            var dummyY = evt.stageY - slider_offsetY;
             var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-            x.time = { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor };
+            x.time = { bar: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, dvs: note_divisor };
         }
         slide.graphics.c().f((x.lr == "L") ? lholdc : rholdc)
             .moveTo((prev.width[0] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - prev.time.int + 1) - (prev.time.num - 1) * bar_height / prev.time.den))
+                (bar_height * (last_bar - prev.time.bar + 1) - (prev.time.num - 1) * bar_height / prev.time.dvs))
             .lineTo((prev.width[1] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - prev.time.int + 1) - (prev.time.num - 1) * bar_height / prev.time.den))
+                (bar_height * (last_bar - prev.time.bar + 1) - (prev.time.num - 1) * bar_height / prev.time.dvs))
             .lineTo((x.width[1] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den))
+                (bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs))
             .lineTo((x.width[0] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den))
+                (bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs))
             .closePath();
         update = true;
     });
@@ -307,12 +311,12 @@ var newslide = function (x, prev) {
     slide.on("dblclick", function (evt) {
         if (edit == "delete") {
             remove(x);
-            stage.removeChild(slide);
+            chart.removeChild(slide);
             update = true;
         }
     });
 
-    stage.addChild(slide);
+    chart.addChild(slide);
     update = true;
 };
 
@@ -321,7 +325,7 @@ var newdown = function (x) {
     down.compositeOperation = "destination-over";
     down.graphics.f(downco).r(
         0,
-        bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den - note_thick * 0.75,
+        bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs - note_thick * 0.75,
         chart_width - 1,
         note_thick * 0.75
     );
@@ -337,15 +341,15 @@ var newdown = function (x) {
 
     down.on("mousedown", function (evt) {
         this.parent.addChild(this);
-        var dummyY = evt.stageY + sliderY;
+        var dummyY = evt.stageY - slider_offsetY;
         this.offset = { x: this.x - evt.stageX, y: this.y - dummyY };
     });
 
     down.on("pressmove", function (evt) {
         if (edit == "nudgeV") {
-            var dummyY = evt.stageY + sliderY;
+            var dummyY = evt.stageY - slider_offsetY;
             var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-            x.time = { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor };
+            x.time = { bar: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, dvs: note_divisor };
             evt.target.y = time * bar_height / note_divisor + Math.floor(this.offset.y * note_divisor / bar_height) * bar_height / note_divisor;
         }
         update = true;
@@ -354,12 +358,12 @@ var newdown = function (x) {
     down.on("dblclick", function (evt) {
         if (edit == "delete") {
             remove(x);
-            stage.removeChild(down);
+            chart.removeChild(down);
             update = true;
         }
     });
 
-    stage.addChild(down);
+    chart.addChild(down);
 };
 
 var newjump = function (x) {
@@ -367,7 +371,7 @@ var newjump = function (x) {
     jump.compositeOperation = "destination-over";
     jump.graphics.f(jumpco).r(
         0,
-        bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den - note_thick * 0.75,
+        bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs - note_thick * 0.75,
         chart_width - 1,
         note_thick * 0.75
     );
@@ -383,15 +387,15 @@ var newjump = function (x) {
 
     jump.on("mousedown", function (evt) {
         this.parent.addChild(this);
-        var dummyY = evt.stageY + sliderY;
+        var dummyY = evt.stageY - slider_offsetY;
         this.offset = { x: this.x - evt.stageX, y: this.y - dummyY };
     });
 
     jump.on("pressmove", function (evt) {
         if (edit == "nudgeV") {
-            var dummyY = evt.stageY + sliderY;
+            var dummyY = evt.stageY - slider_offsetY;
             var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-            x.time = { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor };
+            x.time = { bar: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, dvs: note_divisor };
             evt.target.y = time * bar_height / note_divisor + Math.floor(this.offset.y * note_divisor / bar_height) * bar_height / note_divisor;
         }
         update = true;
@@ -400,12 +404,12 @@ var newjump = function (x) {
     jump.on("dblclick", function (evt) {
         if (edit == "delete") {
             remove(x);
-            stage.removeChild(jump);
+            chart.removeChild(jump);
             update = true;
         }
     });
 
-    stage.addChild(jump);
+    chart.addChild(jump);
 };
 
 /* ==================================== Functions: Control & Calculation ====================================
@@ -413,7 +417,7 @@ var newjump = function (x) {
 */
 
 var tc = function (a) {
-    return a.time.int + (a.time.num - 1) / a.time.den;
+    return a.time.bar + (a.time.num - 1) / a.time.dvs;
 };
 
 var search = function (x) {
@@ -423,22 +427,22 @@ var search = function (x) {
     }
     var tcx = tc(x);
     if (x.type == "hold" || x.type == "slide") {
-        for (i = 0; i < chart.length; i++) {
-            if (tc(chart[i]) > tcx) break;
-            if (typeof chart[i].hold !== "undefined") {
+        for (i = 0; i < chart_data.length; i++) {
+            if (tc(chart_data[i]) > tcx) break;
+            if (typeof chart_data[i].hold !== "undefined") {
                 var l = 0;
-                var r = (chart[i].hold.length - 1);
+                var r = (chart_data[i].hold.length - 1);
                 while (l <= r) {
                     var m = Math.floor((l + r) / 2);
-                    var tcm = tc(chart[i].hold[m]);
+                    var tcm = tc(chart_data[i].hold[m]);
                     if (tcm < tcx)
                         l = m + 1;
                     else if (tcm > tcx)
                         r = m - 1;
                     else {
-                        if (chart[i].hold[m] == x) return [i, m];
-                        if (chart[i].hold[m + 1] == x) return [i, m + 1];
-                        if (chart[i].hold[m - 1] == x) return [i, m - 1];
+                        if (chart_data[i].hold[m] == x) return [i, m];
+                        if (chart_data[i].hold[m + 1] == x) return [i, m + 1];
+                        if (chart_data[i].hold[m - 1] == x) return [i, m - 1];
                         break;
                     }
                 }
@@ -447,18 +451,18 @@ var search = function (x) {
         return [-1, -1];
     }
     var l = 0;
-    var r = (chart.length - 1);
+    var r = (chart_data.length - 1);
     while (l <= r) {
         var m = Math.floor((l + r) / 2);
-        var tcm = tc(chart[m]);
+        var tcm = tc(chart_data[m]);
         if (tcm < tcx)
             l = m + 1;
         else if (tcm > tcx)
             r = m - 1;
         else {
-            if (chart[m] == x) return [m, -1];
-            if (chart[m + 1] == x) return [m + 1, -1];
-            if (chart[m - 1] == x) return [m - 1, -1];
+            if (chart_data[m] == x) return [m, -1];
+            if (chart_data[m + 1] == x) return [m + 1, -1];
+            if (chart_data[m - 1] == x) return [m - 1, -1];
             return [-1, -1];
         }
     }
@@ -470,47 +474,47 @@ var insert = function (x, prev = null) {
     if (x.type == "hold" || x.type == "slide") {
         var rp = search(prev);
         if (rp[0] >= 0) {
-            if (typeof chart[rp[0]].hold == "undefined") {
-                chart[rp[0]].hold = [x];
+            if (typeof chart_data[rp[0]].hold == "undefined") {
+                chart_data[rp[0]].hold = [x];
                 return;
             }
-            chart[rp[0]].hold.splice(rp[1] + 1, 0, x);
+            chart_data[rp[0]].hold.splice(rp[1] + 1, 0, x);
         }
     } else {
         var l = 0;
-        var r = chart.length;
+        var r = chart_data.length;
         while (r > l) {
             var m = (l + r) >>> 1;
-            var tcm = tc(chart[m]);
+            var tcm = tc(chart_data[m]);
             if (tcm < tcx)
                 l = m + 1;
             else
                 r = m;
         }
-        while (typeof chart[l] != "undefined") {
-            if (tc(chart[l]) == tcx)
+        while (typeof chart_data[l] != "undefined") {
+            if (tc(chart_data[l]) == tcx)
                 l++;
             else
                 break;
         }
-        chart.splice(l, 0, x);
+        chart_data.splice(l, 0, x);
     }
 };
 
 var remove = function (x) {
     var r = search(x);
     if (r[1] >= 0) {
-        if (chart[r[0]].hold.length == 1)
-            delete chart[r[0]].hold;
+        if (chart_data[r[0]].hold.length == 1)
+            delete chart_data[r[0]].hold;
         else
-            chart[r[0]].hold.splice(r[1], 1);
+            chart_data[r[0]].hold.splice(r[1], 1);
     } else if (r[0] >= 0) {
-        chart.splice(r[0], 1);
+        chart_data.splice(r[0], 1);
     }
 };
 
 var redraw = function () {
-    chart.forEach(function (x) {
+    chart_data.forEach(function (x) {
         if (x.type == "tap") {
             newtap(x);
             if (typeof x.hold != "undefined") {
@@ -530,27 +534,60 @@ var redraw = function () {
             newjump(x);
         }
     });
-    stage.addChild(dummy);
 
+    redraw_lines()
+}
+
+var redraw_lines = function () {
+    indicate_lines.removeAllChildren()
+
+    // block indicate lines
     var ml = new createjs.Shape();
-    ml.compositeOperation = "destination-over";
+    //ml.compositeOperation = "destination-over";
     for (i = 1; i < 17; i++)
-        ml.graphics.f("rgba(255,255," + (i % 4 ? 255 : 0) + ",0.1)").r(chart_width * i / 16, 0, i % 4 ? 1 : 2, chart_height - 1);
+        ml.graphics.f("rgba(255,255," + (i % 4 ? 255 : 0) + ",0.3)").r(block_width * i, 0, (i % 4) ? 1 : 2, chart_height);
 
-    for (i = 0; i < last_bar * 8; i++)
-        ml.graphics.f("#" + (i % 2 ? "6688FF20" : "FF443340")).r(0, bar_height * (last_bar - (i / 8)) - 2, chart_width + 19, 2);
 
-    stage.addChild(ml);
+    // 4-12 divisor lines
+    for (i = 0; i < last_bar; i++) {
+        ml.graphics.f("rgba(255, 255, 255, 0.4)").r(0, bar_height * i - 4, chart_width + 19, 4);
+        if (note_divisor == 12) {
+            let cut_12 = bar_height / 12
+            for (let j = 0; j < 12; j += 3) {
+                if (j)
+                    ml.graphics.f("rgba(255, 0, 0, 0.2)").r(0, bar_height * i + cut_12 * j - 2, chart_width + 19, 2);
+                ml.graphics.f("rgba(0, 255, 0, 0.2)").r(0, bar_height * i + cut_12 * (j + 1) - 2, chart_width + 19, 2);
+                ml.graphics.f("rgba(0, 255, 0, 0.2)").r(0, bar_height * i + cut_12 * (j + 2) - 2, chart_width + 19, 2);
+            }
+        }
+        else {
+            let cut_16 = bar_height / 16
+            for (let j = 0; j < 16; j += 4) {
+                if (j)
+                    ml.graphics.f("rgba(255, 0, 0, 0.2)").r(0, bar_height * i + cut_16 * j - 2, chart_width + 19, 2);
+                if (note_divisor >= 8)
+                    ml.graphics.f("rgba(0, 0, 255, 0.2)").r(0, bar_height * i + cut_16 * (j + 2) - 2, chart_width + 19, 2);
+                if (note_divisor >= 16) {
+                    ml.graphics.f("rgba(0, 255, 255, 0.2)").r(0, bar_height * i + cut_16 * (j + 1) - 2, chart_width + 19, 2);
+                    ml.graphics.f("rgba(0, 255, 255, 0.2)").r(0, bar_height * i + cut_16 * (j + 3) - 2, chart_width + 19, 2);
+                }
+            }
+        }
 
+    }
+    indicate_lines.addChild(ml);
+
+    // bar counter
     for (i = 0; i < last_bar; i++) {
         var label = new createjs.Text(i, "bold 14px Arial", "#FFFFFF");
         label.textAlign = "left";
         label.x = 202;
         label.textBaseline = "bottom";
         label.y = bar_height * (last_bar - i) - 2;
-        stage.addChild(label);
+        indicate_lines.addChild(label);
     }
 
+    update = true
 }
 
 redraw();
@@ -564,11 +601,11 @@ var tick = function (event) {
     if (update) {
         update = false; // only update once
         stage.update(event);
-        editor.set(chart);
+        editor.set(chart_data);
     } else if (rebuild) {
         rebuild = false; // only update once
-        stage.removeAllChildren();
-        chart = editor.get();
+        chart.removeAllChildren();
+        chart_data = editor.get();
         redraw();
     }
 }
@@ -577,33 +614,34 @@ update = true;
 
 stage.on("stagemousemove", function (evt) {
     dummy.graphics.c();
+
+    if (edit != "add") return
+
+    let place = Math.round(evt.stageX / block_width);
+    let dummyY = evt.stageY - slider_offsetY;
+    let bar_time = last_bar - Math.ceil(Math.max(1, dummyY) / bar_height) + 1
+    let new_dvs_time = note_divisor - Math.ceil((Math.max(1, dummyY) % bar_height) / bar_height * note_divisor) + 1
+
     if (addtap) {
-        //Since I use a slider for transform(), mouseY should be re-calculated.
-        var place = Math.round(evt.stageX * 16 / chart_width);
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-        if (place > (17 - note_width)) place = (17 - note_width);
-        if (place < 1) place = 1;
+        place = Math.max(1, Math.min((17 - note_width), place));
         var x = {
             type: "tap",
-            time: { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor },
+            time: { bar: bar_time, num: new_dvs_time, dvs: note_divisor },
             lr: note_polarity,
             width: [place, place + (note_width - 1)]
         };
-        dummy.compositeOperation = "source-over";
+
         dummy.graphics.f((x.lr == "L") ? lcolor + "80" : rcolor + "80").rr(
             ((x.width[0] - 1) * (block_width)),
-            (bar_height * (last_bar - x.time.int + 1) - ((x.time.num - 1) * bar_height / x.time.den) - note_thick),
+            (bar_height * (last_bar - x.time.bar + 1) - ((x.time.num - 1) * bar_height / x.time.dvs) - note_thick),
             ((x.width[1] - x.width[0] + 1) * (block_width)),
             note_thick,
             2
         );
+        update = true;
     } else if (addsld.clicked) {
-        var place = Math.round(evt.stageX * 16 / chart_width);
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-        if (place > 16) place = (16);
-        if (place < 1) place = 1;
+
+        place = Math.max(1, Math.min(16, place));
         var pwidth = addhld.prev.width[1] - addhld.prev.width[0];
         var left = (place < addhld.prev.width[0]) ? place : (place > addhld.prev.width[1] ? place - pwidth : addhld.prev.width[0]);
         var right = (place < addhld.prev.width[0]) ? (place + pwidth) : (place > addhld.prev.width[1] ? place : addhld.prev.width[1]);
@@ -614,95 +652,91 @@ stage.on("stagemousemove", function (evt) {
             lr: addsld.prev.lr
         };
         x.from = [(x.width[0] < addsld.prev.width[0]) ? x.width[0] : addsld.prev.width[0], x.width[1] > addsld.prev.width[1] ? x.width[1] : addsld.prev.width[1]];
-        dummy.compositeOperation = "source-over";
+
         dummy.graphics.f((x.lr == "L") ? lcolor + "80" : rcolor + "80	").r(
             (x.from[0] * 2 - 1) * (edge_fallback),
-            bar_height * (last_bar - addsld.prev.time.int + 1) - (addsld.prev.time.num - 1) * bar_height / addsld.prev.time.den - note_thick * 2,
+            bar_height * (last_bar - addsld.prev.time.bar + 1) - (addsld.prev.time.num - 1) * bar_height / addsld.prev.time.dvs - note_thick * 2,
             (x.from[1] - x.from[0]) * (block_width),
             note_thick * 2
         );
+        update = true;
     } else if (addhld.clicked) {
-        var place = Math.round(evt.stageX * 16 / chart_width);
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-        if (place > 16) place = (16);
-        if (place < 1) place = 1;
+        place = Math.max(1, Math.min(16, place));
         var pwidth = addhld.prev.width[1] - addhld.prev.width[0];
         var left = (place < addhld.prev.width[0]) ? place : (place > addhld.prev.width[1] ? place - pwidth : addhld.prev.width[0]);
         var right = (place < addhld.prev.width[0]) ? (place + pwidth) : (place > addhld.prev.width[1] ? place : addhld.prev.width[1]);
         var x = {
             type: "hold",
-            time: { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor },
+            time: { bar: bar_time, num: new_dvs_time, dvs: note_divisor },
             width: [left, right],
             lr: addhld.prev.lr
         };
-        dummy.compositeOperation = "destination-over";
+
         dummy.graphics.f((x.lr == "L") ? lholdc + "80" : rholdc + "80")
             .moveTo((addhld.prev.width[0] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - addhld.prev.time.int + 1) - (addhld.prev.time.num - 1) * bar_height / addhld.prev.time.den))
+                (bar_height * (last_bar - addhld.prev.time.bar + 1) - (addhld.prev.time.num - 1) * bar_height / addhld.prev.time.dvs))
             .lineTo((addhld.prev.width[1] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - addhld.prev.time.int + 1) - (addhld.prev.time.num - 1) * bar_height / addhld.prev.time.den))
+                (bar_height * (last_bar - addhld.prev.time.bar + 1) - (addhld.prev.time.num - 1) * bar_height / addhld.prev.time.dvs))
             .lineTo((x.width[1] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den))
+                (bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs))
             .lineTo((x.width[0] * 2 - 1) * (edge_fallback),
-                (bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den))
+                (bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs))
             .closePath();
+
+        update = true;
     } else if (adddwn) {
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
         var x = {
             type: "down",
-            time: { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor }
+            time: { bar: bar_time, num: new_dvs_time, dvs: note_divisor }
         };
-        dummy.compositeOperation = "destination-over";
+
         dummy.graphics.f(downco + "80").r(
             0,
-            bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den - note_thick * 0.75,
-            chart_width - 1,
+            bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs - note_thick * 0.75,
+            chart_width,
             note_thick * 0.75
         );
+        update = true;
     } else if (addjmp) {
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
         var x = {
             type: "jump",
-            time: { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor }
+            time: { bar: bar_time, num: new_dvs_time, dvs: note_divisor }
         };
-        dummy.compositeOperation = "destination-over";
+
         dummy.graphics.f(jumpco + "80").r(
             0,
-            bar_height * (last_bar - x.time.int + 1) - (x.time.num - 1) * bar_height / x.time.den - note_thick * 0.75,
-            chart_width - 1,
+            bar_height * (last_bar - x.time.bar + 1) - (x.time.num - 1) * bar_height / x.time.dvs - note_thick * 0.75,
+            chart_width,
             note_thick * 0.75
         );
+        update = true;
     }
-    update = true;
 });
 
 stage.on("stagemousedown", function (evt) {
+    if (edit != "add") return
+
+    let place = Math.round(evt.stageX / block_width);
+    let dummyY = evt.stageY - slider_offsetY;
+    let bar_time = last_bar - Math.ceil(Math.max(1, dummyY) / bar_height) + 1
+    let new_dvs_time = note_divisor - Math.ceil((Math.max(1, dummyY) % bar_height) / bar_height * note_divisor) + 1
+
     if (addtap) {
-        var place = Math.round(evt.stageX * 16 / chart_width);
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-        if (place > (17 - note_width)) place = (17 - note_width);
-        if (place < 1) place = 1;
+        place = Math.max(1, Math.min((17 - note_width), place));
         var x = {
             type: "tap",
-            time: { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor },
+            time: { bar: bar_time, num: new_dvs_time, dvs: note_divisor },
             lr: note_polarity,
             width: [place, place + (note_width - 1)]
         };
-        dummy.graphics.c();
+
         insert(x);
         newtap(x);
     } else if (addsld.clicked) {
         addsld.clicked = false;
         addsld.start = false;
-        var place = Math.round(evt.stageX * 16 / chart_width);
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-        if (place > 16) place = (16);
-        if (place < 1) place = 1;
+
+        place = Math.max(1, Math.min(16, place));
         var pwidth = addhld.prev.width[1] - addhld.prev.width[0];
         var left = (place < addhld.prev.width[0]) ? place : (place > addhld.prev.width[1] ? place - pwidth : addhld.prev.width[0]);
         var right = (place < addhld.prev.width[0]) ? (place + pwidth) : (place > addhld.prev.width[1] ? place : addhld.prev.width[1]);
@@ -714,7 +748,7 @@ stage.on("stagemousedown", function (evt) {
             lr: addsld.prev.lr
         };
         x.from = [(x.width[0] < addsld.prev.width[0]) ? x.width[0] : addsld.prev.width[0], x.width[1] > addsld.prev.width[1] ? x.width[1] : addsld.prev.width[1]];
-        dummy.graphics.c();
+
         insert(x, addsld.prev);
         newslide(x, addsld.prev);
         addsld.clicked = false;
@@ -723,46 +757,35 @@ stage.on("stagemousedown", function (evt) {
             $(".hldbt").click();
         }
     } else if (addhld.clicked) {
-        var place = Math.round(evt.stageX * 16 / chart_width);
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
-        if (place > 16) place = (16);
-        if (place < 1) place = 1;
+
+        place = Math.max(1, Math.min(16, place));
         var pwidth = addhld.prev.width[1] - addhld.prev.width[0];
         var left = (place < addhld.prev.width[0]) ? place : (place > addhld.prev.width[1] ? place - pwidth : addhld.prev.width[0]);
         var right = (place < addhld.prev.width[0]) ? (place + pwidth) : (place > addhld.prev.width[1] ? place : addhld.prev.width[1]);
         var x = {
             type: "hold",
-            time: { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor },
+            time: { bar: bar_time, num: new_dvs_time, dvs: note_divisor },
             width: [left, right],
             lr: addhld.prev.lr
         };
-        dummy.graphics.c();
+
         insert(x, addhld.prev);
         newhold(x, addhld.prev);
         addhld.clicked = false;
     } else if (adddwn) {
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
         var x = {
             type: "down",
-            time: { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor }
+            time: { bar: bar_time, num: new_dvs_time, dvs: note_divisor }
         };
-        dummy.graphics.c();
         insert(x);
         newdown(x);
-        adddwn = false;
     } else if (addjmp) {
-        var dummyY = evt.stageY + sliderY;
-        var time = Math.ceil((dummyY == 0 ? 1 : dummyY) * note_divisor / bar_height);
         var x = {
             type: "jump",
-            time: { int: last_bar - Math.floor((time - 1) / note_divisor), num: (note_divisor - time % note_divisor) % note_divisor + 1, den: note_divisor }
+            time: { bar: bar_time, num: new_dvs_time, dvs: note_divisor }
         };
-        dummy.graphics.c();
         insert(x);
         newjump(x);
-        addjmp = false;
     }
 });
 
@@ -775,6 +798,7 @@ stage.on("stagemousedown", function (evt) {
 $(".minbt").click(function (e) {
     note_divisor = Number($(this).val());
     $("#beat-divisor-selector").html($(this).html())
+    redraw_lines()
 });
 
 // edit options
@@ -917,9 +941,11 @@ $(".clrbt").click(function (e) {
 
 // redraw button handler
 $(".rdrbt").click(function (e) {
-    chart = editor.get();
-    last_bar = chart[chart.length - 1].time.int;
+    chart_data = editor.get();
+    last_bar = chart_data[chart_data.length - 1].time.bar;
     chart_height = bar_height * last_bar;
+    $("#slider").slider("option", "min", -(last_bar - 2) * slider_steps)
+    $("#slider").slider("value", 0)
     rebuild = true;
 });
 
@@ -927,34 +953,38 @@ $(".rdrbt").click(function (e) {
 $(".nmebt").click(function (e) {
     last_bar += 1;
     chart_height = bar_height * last_bar;
+    $("#slider").slider("option", "min", -(last_bar - 2) * slider_steps)
     rebuild = true;
 });
 
 // I deleted the submit action so it no longer exists
 
-/* ==================================== Others: I don't know ====================================
-    Didn't even touch these things before.
+/* ==================================== Sliders: jQuery UI ====================================
+    Set the sliders and attach event listeners.
 */
 
-$("#slider").height($(window).height() - parseInt(window.getComputedStyle(document.getElementsByTagName("body")[0]).getPropertyValue('padding-top')) - parseInt(window.getComputedStyle(document.getElementsByTagName("body")[0]).getPropertyValue('padding-bottom')));
+var reallocate_slider = function (event, ui) {
+    slider_offsetY = bar_height / slider_steps * ui.value
+    main_ct.y = slider_offsetY;
+    update = true;
+}
 
+// slider setting
 $("#slider").slider({
     orientation: "vertical",
     range: "min",
     min: 0,
-    max: 10000,
-    value: 10000,
-    change: function (event, ui) {
-        var pos = 1 - (ui.value / 10000);
-        sliderY = (last_bar * bar_height - $(window).height()) * pos;
-        stage.setTransform(0, (-1 * sliderY));
-        update = true;
-    }
+    max: 0,
+    value: 0,
+    change: reallocate_slider,
+    slide: reallocate_slider
 });
-document.getElementsByClassName("editarea")[0].addEventListener("wheel", function (evt) {
-    $("#slider").slider("value", ($("#slider").slider("value") + (evt.deltaY > 0 ? -100 : 100)));
-    //$("#slider").trigger("slide");
-});
+
+// mouse wheel scroll event
+document.getElementById("edit-area").addEventListener("wheel", (event) => {
+    event.preventDefault()
+    $("#slider").slider("value", ($("#slider").slider("value") + (event.deltaY > 0 ? -1 : 1)));
+})
 
 // setInterval(()=>{
 //     console.log(addsld)

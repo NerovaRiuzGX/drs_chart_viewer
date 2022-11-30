@@ -3,36 +3,47 @@ body {
     color: silver;
 }
 
-canvas{
+canvas {
     display: block;
     background: #777;
 }
 
-.editarea,.textarea{
-    height: 94vh;
+.darkchange {
+    fill: currentColor;
 }
 
-#editor{
-    height: 85vh;
-    width: 100%;
-    background: #FFF;
+.modal {
+    color: black;
 }
 
-.darkchange{
-    fill:currentColor;
-}
-
-
-
-.modal{
-    color:black;
-}
-
-u{    
+u {
     border-bottom: 1px dotted #000;
     text-decoration: none;
 }
 
-#slider,#cvs{
-    display: inline-block;/* */
+/* things below are added afterwards */
+
+#slider,
+#cvs {
+    display: inline-block;
+}
+
+.ui-slider {
+    background-color: forestgreen;
+    height: 1000px;
+    width: 8px;
+    border-color: transparent;
+}
+
+#slider .ui-slider-range {
+    background-color: greenyellow;
+    border-color: transparent;
+}
+
+#slider .ui-slider-handle {
+    background-color: white;
+    border-color: dimgray;
+    height: 5px;
+    width: 30px;
+    margin: 0;
 }

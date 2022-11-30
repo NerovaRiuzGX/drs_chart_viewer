@@ -13,9 +13,9 @@
 <body>
 	<!-- The main container -->
 	<div class="container-xl">
-		<div class="row py-4">
+		<div class="container-fluid row py-4">
 			<!-- control menu -->
-			<div class="col-8 overflow-auto">
+			<div class="col-9">
 				<!-- general control options -->
 				<div class="row p-2">
 					<!-- beat divisor -->
@@ -47,7 +47,8 @@
 				<div class="row p-2">
 
 					<div class="col-sm-4 btn-group mt-auto" role="group" aria-label="edit">
-						<button type="button" class="btn btn-light edtbt" value='add' aria-expanded="false" aria-controls="note-add-option">
+						<button type="button" class="btn btn-light edtbt" value='add' aria-expanded="false"
+							aria-controls="note-add-option">
 							<div data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-html="true"
 								title="Add a note to your chart.">
 								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
@@ -173,7 +174,7 @@
 				</div>
 
 				<!-- info section -->
-				<div class="row p-2">
+				<div class="p-2">
 					<button type="button" class="btn btn-info infbt" data-bs-toggle="modal" data-bs-target="#info">
 						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
 							<path fill="none" d="M0 0h24v24H0V0z" />
@@ -186,14 +187,14 @@
 
 				<!-- jsoneditor -->
 				<div class="p-2">
-					<div id="editor"></div>
+					<div id="editor" style="height: 500px"></div>
 				</div>
 			</div>
 
 			<!-- edit area (canvas) -->
-			<div class="col-4 overflow-hidden editarea">
-				<canvas height=500 width=220 id='cvs'></canvas>
-				<div id="slider"></div>
+			<div id="edit-area" class="container-fluid col-3">
+				<canvas id='cvs' height="1000px" width="220px" class=""></canvas>
+				<div id="slider" height="1000px"></div>
 			</div>
 		</div>
 	</div>
