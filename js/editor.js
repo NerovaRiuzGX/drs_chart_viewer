@@ -993,7 +993,10 @@ $(".clrbt").click(function (e) {
 // redraw button handler
 $(".rdrbt").click(function (e) {
     chart_data = editor.get();
-    last_bar = chart_data[chart_data.length - 1].time.bar;
+    if (chart_data.at(-1).hold.length)
+        last_bar = chart_data.at(-1).hold.at(-1).time.bar
+    else
+        last_bar = chart_data.at(-1).time.bar;
     chart_height = bar_height * last_bar;
     $("#slider").slider("option", "min", -(last_bar - 2) * slider_steps)
     $("#slider").slider("value", 0)
@@ -1007,7 +1010,7 @@ $(".nmebt").click(function (e) {
     chart_height = bar_height * last_bar;
     $("#slider").slider("option", "min", -(last_bar - 2) * slider_steps)
     //$(".clrbt").click()
-    //rebuild = true;
+    rebuild = true;
 });
 
 // I deleted the submit action so it no longer exists
@@ -1055,6 +1058,7 @@ function download_chart() {
     a.download = ((new Date()).toISOString().slice(0, 10)) + ".drschart"
     a.click()
 }
+
 
 $("#loader").on('change', (event) => {
     let file_list = event.target.files
