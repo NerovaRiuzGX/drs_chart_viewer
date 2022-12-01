@@ -1056,7 +1056,6 @@ function download_chart() {
     a.click()
 }
 
-
 $("#loader").on('change', (event) => {
     let file_list = event.target.files
     let reader = new FileReader()
