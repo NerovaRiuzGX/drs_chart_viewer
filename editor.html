@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>DRS Editor</title>
+	<title>DANCERUSH STARDOM chart editor v1.03beta</title>
 	<link rel="stylesheet" type="text/css" href="./css/bootstrap.min.css">
 	<link rel="stylesheet" type="text/css" href="./css/jsonEditor.min.css">
 	<link rel="stylesheet" type="text/css" href="./css/jquery-ui.min.css">
@@ -14,12 +14,18 @@
 	<!-- The main container -->
 	<div class="container-xl">
 		<div class="container-fluid row py-4">
+			<div id="alert-placeholder"></div>
+
 			<!-- control menu -->
 			<div class="col-9">
+				<h5 class="p-2">
+					DANCERUSH STARDOM chart editor v1.03beta
+				</h5>
+
 				<!-- general control options -->
-				<div class="row p-2">
+				<div class="row justify-content-between p-2">
 					<!-- beat divisor -->
-					<div class="col-sm-3 dropdown">
+					<div class="col-sm-6 dropdown">
 
 						<button id="beat-divisor-selector" class="btn btn-light dropdown-toggle" type="button"
 							data-bs-toggle="dropdown" aria-expanded="false">
@@ -31,7 +37,6 @@
 							<button value="16" class="minbt dropdown-item">1/16 Bar</button>
 							<button value="12" class="minbt dropdown-item">1/12 Bar</button>
 						</div>
-
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
 							class="bi bi-question-circle" viewBox="0 0 16 16" data-bs-toggle="tooltip"
 							data-bs-placement="right" data-bs-html="true"
@@ -40,6 +45,34 @@
 							<path
 								d="M5.255 5.786a.237.237 0 0 0 .241.247h.825c.138 0 .248-.113.266-.25.09-.656.54-1.134 1.342-1.134.686 0 1.314.343 1.314 1.168 0 .635-.374.927-.965 1.371-.673.489-1.206 1.06-1.168 1.987l.003.217a.25.25 0 0 0 .25.246h.811a.25.25 0 0 0 .25-.25v-.105c0-.718.273-.927 1.01-1.486.609-.463 1.244-.977 1.244-2.056 0-1.511-1.276-2.241-2.673-2.241-1.267 0-2.655.59-2.75 2.286zm1.557 5.763c0 .533.425.927 1.01.927.609 0 1.028-.394 1.028-.927 0-.552-.42-.94-1.029-.94-.584 0-1.009.388-1.009.94z" />
 						</svg>
+
+					</div>
+
+					<div class="col-sm-6 row">
+						<div class="col align-self-right btn-group" role="group" aria-label="drawoption">
+							<button type="button" class="btn btn-warning nmebt" data-bs-toggle="tooltip"
+								data-bs-placement="bottom" data-bs-html="true"
+								title="Add a new bar at the end of your chart.<br><br>If there's too many unused bars at the end, you can simply get rid of them by doing a Reload.">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+									class="bi bi-plus-lg" viewBox="0 0 16 16">
+									<path fill-rule="evenodd"
+										d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
+								</svg>
+								Add a New Bar
+							</button>
+							<button type="button" class="btn btn-danger rdrbt" data-bs-toggle="tooltip"
+								data-bs-placement="bottom" data-bs-html="true"
+								title="Reload the chart using generated JSON data.<br><br>If you see anything wrong, Reload can (often) solve it. You can also use this apply changes from the JSON editor.">
+								<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+									class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+									<path
+										d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z" />
+									<path fill-rule="evenodd"
+										d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z" />
+								</svg>
+								Reload
+							</button>
+						</div>
 					</div>
 				</div>
 
@@ -60,7 +93,7 @@
 						</button>
 						<button type="button" class="btn btn-light edtbt" value='delete' data-bs-toggle="tooltip"
 							data-bs-placement="bottom" data-bs-html="true"
-							title="Double click a note to remove a note from your chart.">
+							title="Double click a note to remove a note, then reload the chart.<br><br>Please note that if you remove a note, every relative HOLD/SLIDE notes after it will also be removed.">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
 								class="bi bi-trash3" viewBox="0 0 16 16">
 								<path
@@ -108,18 +141,18 @@
 				</div>
 
 				<!-- add option -->
-				<div id="note-add-option" class="collapse">
+				<div id="note-add-option" class="collapse p-2">
 					<!-- object width & polarity -->
 					<div class="row p-2">
 						<div class="col-6 btn-group" role="group" aria-label="width" data-bs-toggle="tooltip"
 							data-bs-placement="bottom" data-bs-html="true"
-							title="Set the default note width.<br><br>In most of the charts, EASY difficulty uses 6 blocks, and NORMAL uses 5 in default.">
+							title="Set default note width.<br><br>In most of the charts, notes in EASY are 6 blocks wide, and NORMAL ones are 5.">
 							<button type="button" class="btn btn-secondary tawbt" value="6">6 (EASY)</button>
 							<button type="button" class="btn btn-warning tawbt" value="5">5 (NORMAL)</button>
 						</div>
 						<div class="col-4 btn-group" role="group" aria-label="tap" data-bs-toggle="tooltip"
 							data-bs-placement="bottom" data-bs-html="true"
-							title="Set the note color/polarity.<br><br>Notes for left foot uses orange, and right uses blue.">
+							title="Set the note color/polarity.<br><br>Notes for left foot use orange, and right ones use blue.">
 							<button type="button" class="btn btn-secondary tapbt" value="L">L</button>
 							<button type="button" class="btn btn-primary tapbt" value="R">R</button>
 						</div>
@@ -129,7 +162,7 @@
 					<div class="row p-2">
 						<div class="col-10 btn-group" role="group" aria-label="hold" data-bs-toggle="tooltip"
 							data-bs-placement="bottom" data-bs-html="true"
-							title="Set the note type.<br><br>Beware that HOLD/SLIDE notes must follow after either a NOTE or another HOLD/SLIDE.">
+							title="Set the note type.<br><br>HOLD/SLIDE note cannot be added independentally.">
 							<button type="button" class="btn btn-secondary tonbt btntp" value="note">NOTE</button>
 							<button type="button" class="btn btn-secondary hldbt btntp" value="hold">HOLD</button>
 							<button type="button" class="btn btn-secondary sldbt btntp" value="slide">SLIDE</button>
@@ -145,49 +178,79 @@
 					</div>
 				</div>
 
-				<!-- draw option -->
-				<div class="row p-2">
-					<div class="btn-group" role="group" aria-label="drawoption">
-						<button type="button" class="btn btn-warning nmebt" data-bs-toggle="tooltip"
-							data-bs-placement="bottom" data-bs-html="true"
-							title="Add a new bar at the end of your chart.<br><br>If there's too many unused bars at the end, you can simply get rid of them by doing a Reload.">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-								class="bi bi-plus-lg" viewBox="0 0 16 16">
-								<path fill-rule="evenodd"
-									d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2Z" />
-							</svg>
-							Add a New Bar
-						</button>
-						<button type="button" class="btn btn-danger rdrbt" data-bs-toggle="tooltip"
-							data-bs-placement="bottom" data-bs-html="true"
-							title="Reload the chart using generated JSON data.<br><br>If you see anything wrong, Reload can (often) solve it. You can also use this apply changes from the JSON editor.">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
-								class="bi bi-arrow-repeat" viewBox="0 0 16 16">
-								<path
-									d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41zm-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9z" />
-								<path fill-rule="evenodd"
-									d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5.002 5.002 0 0 0 8 3zM3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9H3.1z" />
-							</svg>
-							Reload
-						</button>
-					</div>
-				</div>
-
 				<!-- info section -->
 				<div class="p-2">
-					<button type="button" class="btn btn-info infbt" data-bs-toggle="modal" data-bs-target="#info">
-						<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-							<path fill="none" d="M0 0h24v24H0V0z" />
+					<button type="button" class="btn btn-dark stnbt" data-bs-toggle="collapse"
+						data-bs-target="#setting-collapse" aria-expanded="false" aria-controls="setting-collapse">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+							class="bi bi-gear" viewBox="0 0 16 16">
 							<path
-								d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 15c-.55 0-1-.45-1-1v-4c0-.55.45-1 1-1s1 .45 1 1v4c0 .55-.45 1-1 1zm1-8h-2V7h2v2z"
-								class="darkchange" />
-						</svg>INFO
+								d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z" />
+							<path
+								d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z" />
+						</svg>
+						Settings
 					</button>
+					<button type="button" class="btn btn-dark infbt" data-bs-toggle="modal" data-bs-target="#info">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+							class="bi bi-info" viewBox="0 0 16 16">
+							<path
+								d="m8.93 6.588-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z" />
+						</svg>
+						Information
+					</button>
+				</div>
+
+				<div id="setting-collapse" class="collapse p-2">
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" role="switch" id="scroll-invert">
+						<label class="form-check-label" for="scroll-invert">Invert mouse scroll on editor</label>
+					</div>
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" role="switch" id="hide-divisor">
+						<label class="form-check-label" for="hide-divisor">Hide beat divisor</label>
+					</div>
+					<div class="form-check form-switch">
+						<input class="form-check-input" type="checkbox" role="switch" id="hide-block">
+						<label class="form-check-label" for="hide-block">Hide block lines (white)</label>
+					</div>
 				</div>
 
 				<!-- jsoneditor -->
 				<div class="p-2">
 					<div id="editor" style="height: 500px"></div>
+				</div>
+
+				<!-- load option -->
+				<div class="row p-2">
+					<div class="btn-group" role="group" aria-label="drawoption">
+						<label class="btn btn-dark" data-bs-toggle="tooltip" data-bs-placement="bottom"
+							data-bs-html="true"
+							title="Upload a .drschart file so you can start from your previous work.">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+								class="bi bi-file-earmark-arrow-up" viewBox="0 0 16 16">
+								<path
+									d="M8.5 11.5a.5.5 0 0 1-1 0V7.707L6.354 8.854a.5.5 0 1 1-.708-.708l2-2a.5.5 0 0 1 .708 0l2 2a.5.5 0 0 1-.708.708L8.5 7.707V11.5z" />
+								<path
+									d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z" />
+							</svg>
+							Load from...
+							<input id="loader" type="file" accept=".drschart" hidden>
+							</input>
+						</label>
+						<button type="button" class="btn btn-dark" onclick="download_chart()" data-bs-toggle="tooltip"
+							data-bs-placement="bottom" data-bs-html="true"
+							title="Download the current chart as a .drschart file.<br><br>It is recommended to do a Reload before downloading.">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+								class="bi bi-download" viewBox="0 0 16 16">
+								<path
+									d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z" />
+								<path
+									d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z" />
+							</svg>
+							Download chart as file
+						</button>
+					</div>
 				</div>
 			</div>
 
@@ -207,236 +270,101 @@
 		<div class="modal-dialog" role="document">
 			<div class="modal-content">
 				<div class="modal-header">
-					<h5 class="modal-title" id="exampleModalLabel">INFO</h5>
-					<button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-						<span aria-hidden="true">&times;</span>
-					</button>
+					<h5 class="modal-title" id="exampleModalLabel">Information</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body">
-					<div class="tabbable" id="list">
-						<ul class="nav nav-tabs">
-							<li class="nav-item">
-								<a class="nav-link active" href="#infobeat" data-bs-toggle="tab">BEAT</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="#infonew" data-bs-toggle="tab">NEW</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="#infoedit" data-bs-toggle="tab">EDIT</a>
-							</li>
-							<li class="nav-item">
-								<a class="nav-link" href="#infoother" data-bs-toggle="tab">OTHER</a>
-							</li>
-						</ul>
-						<div class="tab-content">
-							<div class="tab-pane active" id="infobeat">
-								<h5>INFOBEATTITLE</h5>
-								<p>INFOBEAT</p>
+					<div class="row">
+						<div class="col-4">
+							<div class="list-group" id="list-tab" role="tablist">
+								<a class="list-group-item list-group-item-action active" id="list-bug-list"
+									data-bs-toggle="list" href="#list-bug" role="tab" aria-controls="list-bug">Bug
+									report</a>
+								<a class="list-group-item list-group-item-action" id="list-credits-list"
+									data-bs-toggle="list" href="#list-credits" role="tab"
+									aria-controls="list-credits">Credits</a>
+								<a class="list-group-item list-group-item-action" id="list-tools-list"
+									data-bs-toggle="list" href="#list-tools" role="tab"
+									aria-controls="list-tools">Tools</a>
+								<a class="list-group-item list-group-item-action" id="list-about-list"
+									data-bs-toggle="list" href="#list-about" role="tab"
+									aria-controls="list-about">About</a>
 							</div>
-							<div class="tab-pane" id="infonew">
-								<div class="tabbable" id="newlist">
-									<ul class="nav nav-tabs">
-										<li class="nav-item">
-											<a href="#newwidth" class="nav-link active" data-bs-toggle="tab">WIDTH</a>
+						</div>
+						<div class="col-8">
+							<div class="tab-content" id="nav-tabContent">
+								<div class="tab-pane fade show active" id="list-bug" role="tabpanel"
+									aria-labelledby="list-bug-list">
+									<h5>Bug report</h5>
+									This is not the final version of this editor. Please contact me through Discord
+									(Nerova#0462) in DANCERUSH STARDOM server if you found bugs.
+									<a href="https://discord.gg/dancerush">https://discord.gg/dancerush</a>
+								</div>
+								<div class="tab-pane fade" id="list-credits" role="tabpanel"
+									aria-labelledby="list-credits-list">
+									<h5>Original Frame developer</h5>
+									<ul>
+										<li><a href="https://github.com/Adamsun0306/Dancerush_score">Adam36</a></li>
+										<li><a href="https://DANCERUSH.info">DANCERUSH.info</a></li>
+									</ul>
+									<h5>Inspiration & help</h5>
+									<img src="https://cdn.discordapp.com/attachments/571142378518347797/864067715009609728/QR_Code.png"
+										width="100px" height="100px">
+								</div>
+								<div class="tab-pane fade" id="list-tools" role="tabpanel"
+									aria-labelledby="list-tools-list">
+									<h5>Tools</h5>
+									<ul>
+										<li>EaselJS</li>
+										<li>jQuery</li>
+										<li>Popper.js</li>
+										<li>Bootstrap</li>
+										<li>jsonEditor</li>
+									</ul>
+								</div>
+								<div class="tab-pane fade" id="list-about" role="tabpanel"
+									aria-labelledby="list-about-list">
+									<h5>About</h5>
+									<ul>
+										<li><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+												fill="currentColor" class="bi bi-github" viewBox="0 0 16 16">
+												<path
+													d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z" />
+											</svg> <a
+												href="https://github.com/NerovaRiuzGX/drs_chart_viewer/">NerovaRiuzGX</a>
 										</li>
-										<li class="nav-item">
-											<a href="#newlr" class="nav-link" data-bs-toggle="tab">L/R</a>
+										<li>
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+												fill="currentColor" class="bi bi-youtube" viewBox="0 0 16 16">
+												<path
+													d="M8.051 1.999h.089c.822.003 4.987.033 6.11.335a2.01 2.01 0 0 1 1.415 1.42c.101.38.172.883.22 1.402l.01.104.022.26.008.104c.065.914.073 1.77.074 1.957v.075c-.001.194-.01 1.108-.082 2.06l-.008.105-.009.104c-.05.572-.124 1.14-.235 1.558a2.007 2.007 0 0 1-1.415 1.42c-1.16.312-5.569.334-6.18.335h-.142c-.309 0-1.587-.006-2.927-.052l-.17-.006-.087-.004-.171-.007-.171-.007c-1.11-.049-2.167-.128-2.654-.26a2.007 2.007 0 0 1-1.415-1.419c-.111-.417-.185-.986-.235-1.558L.09 9.82l-.008-.104A31.4 31.4 0 0 1 0 7.68v-.123c.002-.215.01-.958.064-1.778l.007-.103.003-.052.008-.104.022-.26.01-.104c.048-.519.119-1.023.22-1.402a2.007 2.007 0 0 1 1.415-1.42c.487-.13 1.544-.21 2.654-.26l.17-.007.172-.006.086-.003.171-.007A99.788 99.788 0 0 1 7.858 2h.193zM6.4 5.209v4.818l4.157-2.408L6.4 5.209z" />
+											</svg> <a
+												href="https://www.youtube.com/channel/UC8eNrPH6Vu_YbDzyQI9PISQ">Nerova
+												Riuz GX</a>
 										</li>
-										<li class="nav-item">
-											<a href="#newtap" class="nav-link" data-bs-toggle="tab">TAP</a>
+										<li>
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+												fill="currentColor" class="bi bi-twitter" viewBox="0 0 16 16">
+												<path
+													d="M5.026 15c6.038 0 9.341-5.003 9.341-9.334 0-.14 0-.282-.006-.422A6.685 6.685 0 0 0 16 3.542a6.658 6.658 0 0 1-1.889.518 3.301 3.301 0 0 0 1.447-1.817 6.533 6.533 0 0 1-2.087.793A3.286 3.286 0 0 0 7.875 6.03a9.325 9.325 0 0 1-6.767-3.429 3.289 3.289 0 0 0 1.018 4.382A3.323 3.323 0 0 1 .64 6.575v.045a3.288 3.288 0 0 0 2.632 3.218 3.203 3.203 0 0 1-.865.115 3.23 3.23 0 0 1-.614-.057 3.283 3.283 0 0 0 3.067 2.277A6.588 6.588 0 0 1 .78 13.58a6.32 6.32 0 0 1-.78-.045A9.344 9.344 0 0 0 5.026 15z" />
+											</svg> <a href="https://twitter.com/NerovaRiuzGX">Nerova</a>
 										</li>
-										<li class="nav-item">
-											<a href="#newhold" class="nav-link" data-bs-toggle="tab">HOLD</a>
-										</li>
-										<li class="nav-item">
-											<a href="#newslide" class="nav-link" data-bs-toggle="tab">SLIDE</a>
-										</li>
-										<li class="nav-item">
-											<a href="#newdown" class="nav-link" data-bs-toggle="tab">DOWN</a>
-										</li>
-										<li class="nav-item">
-											<a href="#newjump" class="nav-link" data-bs-toggle="tab">JUMP</a>
-										</li>
-										<li class="nav-item">
-											<a href="#newx" class="nav-link" data-bs-toggle="tab">X</a>
-										</li>
-										<li class="nav-item">
-											<a href="#newme" class="nav-link" data-bs-toggle="tab">NEWMEASURE</a>
+										<li>
+											<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+												fill="currentColor" class="bi bi-discord" viewBox="0 0 16 16">
+												<path
+													d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.051.051 0 0 1 .015-.019c.084-.063.168-.129.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.08.066.164.132.248.195a.051.051 0 0 1-.004.085 8.254 8.254 0 0 1-1.249.594.05.05 0 0 0-.03.03.052.052 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.235 13.235 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z" />
+											</svg> Nerova#0462
 										</li>
 									</ul>
-									<div class="tab-content">
-										<div class="tab-pane active" id="newwidth">
-											<h5>WIDTH</h5>
-											<p>NEWWIDTH</p>
-										</div>
-										<div class="tab-pane" id="newlr">
-											<h5>L/R</h5>
-											<p>NEWLR</p>
-										</div>
-										<div class="tab-pane" id="newtap">
-											<h5>TAP</h5>
-											<p>NEWTAP</p>
-										</div>
-										<div class="tab-pane" id="newhold">
-											<h5>HOLD</h5>
-											<p>NEWHOLD</p>
-										</div>
-										<div class="tab-pane" id="newslide">
-											<h5>SLIDE</h5>
-											<p>NEWSLIDE</p>
-										</div>
-										<div class="tab-pane" id="newdown">
-											<h5>DOWN</h5>
-											<p>NEWDOWN</p>
-										</div>
-										<div class="tab-pane" id="newjump">
-											<h5>JUMP</h5>
-											<p>NEWJUMP</p>
-										</div>
-										<div class="tab-pane" id="newx">
-											<h5>NEWXTITLE
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-													viewBox="0 0 24 24">
-													<path fill="none" d="M0 0h24v24H0V0z" />
-													<path
-														d="M18.3 5.71c-.39-.39-1.02-.39-1.41 0L12 10.59 7.11 5.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41L10.59 12 5.7 16.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0L12 13.41l4.89 4.89c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L13.41 12l4.89-4.89c.38-.38.38-1.02 0-1.4z"
-														class="darkchange" />
-												</svg>
-											</h5>
-											<p>NEWX</p>
-										</div>
-										<div class="tab-pane" id="newme">
-											<h5>NEWMEASURE</h5>
-											<p>NEWME</p>
-										</div>
-									</div>
 								</div>
-							</div>
-							<div class="tab-pane" id="infoedit">
-								<div class="tabbable" id="editlist">
-									<ul class="nav nav-tabs">
-										<li class="nav-item">
-											<a href="#editnone" class="nav-link active"
-												data-bs-toggle="tab">EDITNONETITLE</a>
-										</li>
-										<li class="nav-item">
-											<a href="#editrem" class="nav-link" data-bs-toggle="tab">EDITREMOVETITLE</a>
-										</li>
-										<li class="nav-item">
-											<a href="#editn" class="nav-link" data-bs-toggle="tab">EDITNTITLE</a>
-										</li>
-										<li class="nav-item">
-											<a href="#edite" class="nav-link" data-bs-toggle="tab">EDITETITLE</a>
-										</li>
-										<li class="nav-item">
-											<a href="#editl" class="nav-link" data-bs-toggle="tab">EDITLTITLE</a>
-										</li>
-										<li class="nav-item">
-											<a href="#editr" class="nav-link" data-bs-toggle="tab">EDITRTITLE</a>
-										</li>
-									</ul>
-									<div class="tab-content">
-										<div class="tab-pane active" id="editnone">
-											<h5>EDITNONETITLE
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-													viewBox="0 0 24 24">
-													<path fill="none" d="M0 0h24v24H0V0z" />
-													<path
-														d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM4 12c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"
-														class="darkchange" />
-												</svg>
-											</h5>
-											<p>EDITNONE</p>
-										</div>
-										<div class="tab-pane" id="editrem">
-											<h5>EDITREMOVETITLE
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-													viewBox="0 0 24 24">
-													<path fill="none" d="M0 0h24v24H0V0z" />
-													<path
-														d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V9c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v10zM18 4h-2.5l-.71-.71c-.18-.18-.44-.29-.7-.29H9.91c-.26 0-.52.11-.7.29L8.5 4H6c-.55 0-1 .45-1 1s.45 1 1 1h12c.55 0 1-.45 1-1s-.45-1-1-1z"
-														class="darkchange" />
-												</svg>
-											</h5>
-											<p>EDITREMOVE</p>
-										</div>
-										<div class="tab-pane" id="editn">
-											<h5>
-												<?= _EDITNTITLE ?>
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-													viewBox="0 0 24 24">
-													<path fill="none" d="M0 0h24v24H0V0z" />
-													<path
-														d="M16 17.01V11c0-.55-.45-1-1-1s-1 .45-1 1v6.01h-1.79c-.45 0-.67.54-.35.85l2.79 2.78c.2.19.51.19.71 0l2.79-2.78c.32-.31.09-.85-.35-.85H16zM8.65 3.35L5.86 6.14c-.32.31-.1.85.35.85H8V13c0 .55.45 1 1 1s1-.45 1-1V6.99h1.79c.45 0 .67-.54.35-.85L9.35 3.35c-.19-.19-.51-.19-.7 0z"
-														class="darkchange" />
-												</svg>
-											</h5>
-											<p>EDITN</p>
-										</div>
-										<div class="tab-pane" id="edite">
-											<h5>EDITETITLE
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-													viewBox="0 0 24 24">
-													<path fill="none" d="M0 0h24v24H0V0z" />
-													<path
-														d="M6.14 11.86l-2.78 2.79c-.19.2-.19.51 0 .71l2.78 2.79c.31.32.85.09.85-.35V16H13c.55 0 1-.45 1-1s-.45-1-1-1H6.99v-1.79c0-.45-.54-.67-.85-.35zm14.51-3.21l-2.78-2.79c-.31-.32-.85-.09-.85.35V8H11c-.55 0-1 .45-1 1s.45 1 1 1h6.01v1.79c0 .45.54.67.85.35l2.78-2.79c.2-.19.2-.51.01-.7z"
-														class="darkchange" />
-												</svg>
-											</h5>
-											<p>EDITE</p>
-										</div>
-										<div class="tab-pane" id="editl">
-											<h5>EDITLTITLE
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-													viewBox="0 0 24 24">
-													<path opacity=".87" fill="none" d="M24 0v24H0V0h24z" />
-													<path
-														d="M17.7 15.89L13.82 12l3.89-3.89c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-4.59 4.59c-.39.39-.39 1.02 0 1.41l4.59 4.59c.39.39 1.02.39 1.41 0 .38-.38.38-1.02-.01-1.4zM7 6c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1s-1-.45-1-1V7c0-.55.45-1 1-1z"
-														class="darkchange" />
-												</svg>
-											</h5>
-											<p>EDITL</p>
-										</div>
-										<div class="tab-pane" id="editr">
-											<h5>EDITRTITLE
-												<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24"
-													viewBox="0 0 24 24">
-													<path opacity=".87" fill="none" d="M0 0h24v24H0V0z" />
-													<path
-														d="M6.29 8.11L10.18 12l-3.89 3.89c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l4.59-4.59c.39-.39.39-1.02 0-1.41L7.7 6.7c-.39-.39-1.02-.39-1.41 0-.38.39-.38 1.03 0 1.41zM17 6c.55 0 1 .45 1 1v10c0 .55-.45 1-1 1s-1-.45-1-1V7c0-.55.45-1 1-1z"
-														class="darkchange" />
-												</svg>
-											</h5>
-											<p>EDITR</p>
-										</div>
-									</div>
-								</div>
-							</div>
-							<div class="tab-pane" id="infoother">
-								<h5>REDRAWTITLE
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-										<path fill="none" d="M0 0h24v24H0V0z" />
-										<path
-											d="M17.65 6.35c-1.63-1.63-3.94-2.57-6.48-2.31-3.67.37-6.69 3.35-7.1 7.02C3.52 15.91 7.27 20 12 20c3.19 0 5.93-1.87 7.21-4.56.32-.67-.16-1.44-.9-1.44-.37 0-.72.2-.88.53-1.13 2.43-3.84 3.97-6.8 3.31-2.22-.49-4.01-2.3-4.48-4.52C5.31 9.44 8.26 6 12 6c1.66 0 3.14.69 4.22 1.78l-1.51 1.51c-.63.63-.19 1.71.7 1.71H19c.55 0 1-.45 1-1V6.41c0-.89-1.08-1.34-1.71-.71l-.64.65z"
-											class="darkchange" />
-									</svg>
-								</h5>
-								<p>REDRAW</p>
-								<h5>UPLOAD
-									<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
-										<path fill="none" d="M0 0h24v24H0V0z" />
-										<path
-											d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM14 13v4h-4v-4H7l4.65-4.65c.2-.2.51-.2.71 0L17 13h-3z"
-											class="darkchange" />
-									</svg>
-								</h5>
-								<p>UPLOADINFO</p>
 							</div>
 						</div>
 					</div>
+
 				</div>
 				<div class="modal-footer">
-					<button type="button" class="btn btn-primary" data-bs-dismiss="modal">CLOSE</button>
+					<button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
 				</div>
 			</div>
 		</div>

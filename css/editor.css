@@ -1,5 +1,5 @@
 body {
-    background: rgb(37, 37, 37);
+    background: #212529;
     color: silver;
 }
 
@@ -8,20 +8,9 @@ canvas {
     background: #777;
 }
 
-.darkchange {
-    fill: currentColor;
-}
-
 .modal {
     color: black;
 }
-
-u {
-    border-bottom: 1px dotted #000;
-    text-decoration: none;
-}
-
-/* things below are added afterwards */
 
 #slider,
 #cvs {
@@ -46,4 +35,9 @@ u {
     height: 5px;
     width: 30px;
     margin: 0;
+}
+
+#note-add-option {
+    background-color: #f8f9fa;
+    border-radius: 10px;
 }
